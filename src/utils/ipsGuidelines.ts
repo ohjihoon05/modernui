@@ -119,6 +119,8 @@ export interface TextGenerationResult {
 export function generateIPSText(request: TextGenerationRequest): TextGenerationResult {
   const { componentType, context, safetyLevel, includeUnit, value } = request;
 
+  console.log('[generateIPSText] Starting generation with:', { componentType, context, safetyLevel, includeUnit, value });
+
   let text = '';
   let textKo = '';
   let explanation = '';
@@ -131,6 +133,7 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
     text = `${icon} `;
     textKo = `${icon} `;
     appliedRules.push('Safety icon applied');
+    console.log('[generateIPSText] Safety icon added:', { text, textKo });
   }
 
   // Helper function to detect keywords in context
@@ -403,15 +406,28 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
 
   // Ensure we always have some text
   if (!text.trim()) {
+    console.warn('[generateIPSText] WARNING: Text is empty, using fallback');
     text = 'System';
     textKo = '시스템';
-    explanation = 'Default text generated';
-    explanationKo = '기본 텍스트 생성됨';
+    explanation = 'Default text generated - please provide more specific context';
+    explanationKo = '기본 텍스트 생성됨 - 더 구체적인 상황 설명이 필요합니다';
   }
 
+  // Final safety check
+  const finalText = text.trim() || 'ERROR: No text generated';
+  const finalTextKo = textKo.trim() || 'ERROR: 텍스트 생성 실패';
+
+  console.log('[generateIPSText] Final result:', {
+    text: finalText,
+    textKo: finalTextKo,
+    explanation,
+    explanationKo,
+    appliedRules
+  });
+
   return {
-    text: text.trim(),
-    textKo: textKo.trim(),
+    text: finalText,
+    textKo: finalTextKo,
     explanation: explanation || 'Generated following IPS guidelines',
     explanationKo: explanationKo || 'IPS 가이드라인에 따라 생성됨',
     appliedRules: appliedRules.length > 0 ? appliedRules : ['Principle: Immediate Comprehensibility'],
