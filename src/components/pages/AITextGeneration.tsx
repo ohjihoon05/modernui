@@ -18,8 +18,8 @@ import {
 export function AITextGeneration() {
   const [componentType, setComponentType] = useState<ComponentType>('button');
   const [context, setContext] = useState('');
-  const [safetyLevel, setSafetyLevel] = useState<SafetyLevel | ''>('');
-  const [includeUnit, setIncludeUnit] = useState<keyof typeof UNITS | ''>('');
+  const [safetyLevel, setSafetyLevel] = useState<SafetyLevel | '' | 'none'>('none');
+  const [includeUnit, setIncludeUnit] = useState<keyof typeof UNITS | '' | 'none'>('none');
   const [value, setValue] = useState('');
   const [result, setResult] = useState<TextGenerationResult | null>(null);
 
@@ -32,8 +32,8 @@ export function AITextGeneration() {
     const generatedResult = generateIPSText({
       componentType,
       context,
-      safetyLevel: safetyLevel || undefined,
-      includeUnit: includeUnit || undefined,
+      safetyLevel: (safetyLevel && safetyLevel !== 'none') ? safetyLevel as SafetyLevel : undefined,
+      includeUnit: (includeUnit && includeUnit !== 'none') ? includeUnit as keyof typeof UNITS : undefined,
       value: value || undefined,
     });
 
@@ -42,8 +42,8 @@ export function AITextGeneration() {
 
   const handleClear = () => {
     setContext('');
-    setSafetyLevel('');
-    setIncludeUnit('');
+    setSafetyLevel('none');
+    setIncludeUnit('none');
     setValue('');
     setResult(null);
   };
@@ -110,12 +110,12 @@ export function AITextGeneration() {
                 <Label htmlFor="safety-level" className="text-foreground/80">
                   Safety Level / 안전 수준 (Optional)
                 </Label>
-                <Select value={safetyLevel} onValueChange={(v) => setSafetyLevel(v as SafetyLevel | '')}>
+                <Select value={safetyLevel} onValueChange={(v) => setSafetyLevel(v as SafetyLevel | '' | 'none')}>
                   <SelectTrigger id="safety-level" className="bg-input-background border-border text-foreground">
                     <SelectValue placeholder="Select if safety-related... / 안전 관련 시 선택" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
-                    <SelectItem value="">None / 없음</SelectItem>
+                    <SelectItem value="none">None / 없음</SelectItem>
                     <SelectItem value="critical">🚨 Critical / 긴급</SelectItem>
                     <SelectItem value="danger">🔴 Danger / 위험</SelectItem>
                     <SelectItem value="warning">⚠️ Warning / 경고</SelectItem>
@@ -129,12 +129,12 @@ export function AITextGeneration() {
                   <Label htmlFor="unit" className="text-foreground/80">
                     Unit / 단위 (Optional)
                   </Label>
-                  <Select value={includeUnit} onValueChange={(v) => setIncludeUnit(v as keyof typeof UNITS | '')}>
+                  <Select value={includeUnit} onValueChange={(v) => setIncludeUnit(v as keyof typeof UNITS | '' | 'none')}>
                     <SelectTrigger id="unit" className="bg-input-background border-border text-foreground">
                       <SelectValue placeholder="Select unit..." />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
-                      <SelectItem value="">None / 없음</SelectItem>
+                      <SelectItem value="none">None / 없음</SelectItem>
                       <SelectItem value="temperature">°C (Temperature)</SelectItem>
                       <SelectItem value="pressure">Torr (Pressure)</SelectItem>
                       <SelectItem value="flow">sccm (Flow)</SelectItem>
