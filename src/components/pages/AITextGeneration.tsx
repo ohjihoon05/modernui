@@ -37,6 +37,15 @@ export function AITextGeneration() {
       value: value || undefined,
     });
 
+    console.log('=== Text Generation Debug ===');
+    console.log('Input:', { componentType, context, safetyLevel, includeUnit, value });
+    console.log('Generated Result:', generatedResult);
+    console.log('Text:', generatedResult.text);
+    console.log('TextKo:', generatedResult.textKo);
+    console.log('Text length:', generatedResult.text?.length);
+    console.log('TextKo length:', generatedResult.textKo?.length);
+    console.log('===========================');
+
     setResult(generatedResult);
   };
 
@@ -225,13 +234,13 @@ export function AITextGeneration() {
                     <div className="mb-4">
                       <Label className="text-sm text-muted-foreground">English</Label>
                       <div className="text-2xl font-semibold text-foreground mt-1">
-                        {result.text || <span className="text-muted-foreground">N/A</span>}
+                        {result.text && result.text.trim() ? result.text : '[No text generated - please check inputs]'}
                       </div>
                     </div>
                     <div>
                       <Label className="text-sm text-muted-foreground">한국어</Label>
                       <div className="text-2xl font-semibold text-foreground mt-1">
-                        {result.textKo || <span className="text-muted-foreground">N/A</span>}
+                        {result.textKo && result.textKo.trim() ? result.textKo : '[텍스트 미생성 - 입력값 확인 필요]'}
                       </div>
                     </div>
                   </div>
