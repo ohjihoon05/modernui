@@ -133,19 +133,49 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
     appliedRules.push('Safety icon applied');
   }
 
+  // Helper function to detect keywords in context
+  const hasKeyword = (keywords: string[]) =>
+    keywords.some(keyword => context.toLowerCase().includes(keyword));
+
   // Generate text based on component type
   switch (componentType) {
     case 'button':
-      if (context.includes('start') || context.includes('시작')) {
+      if (hasKeyword(['start', '시작', 'begin', '개시'])) {
         text += 'Start';
         textKo += '시작';
         explanation = 'Clear action verb for starting operation';
         explanationKo = '동작 시작을 명확히 표현';
-      } else if (context.includes('stop') || context.includes('정지')) {
+      } else if (hasKeyword(['stop', '정지', 'halt'])) {
         text += 'Stop';
         textKo += '정지';
         explanation = 'Clear action verb for stopping operation';
         explanationKo = '동작 정지를 명확히 표현';
+      } else if (hasKeyword(['emergency', '긴급', '비상'])) {
+        text += 'Emergency Stop';
+        textKo += '긴급 정지';
+        explanation = 'Emergency action button with clear urgency';
+        explanationKo = '긴급 동작 버튼으로 명확한 긴급성 표현';
+      } else if (hasKeyword(['reset', '리셋', '재설정', '초기화'])) {
+        text += 'Reset';
+        textKo += '초기화';
+        explanation = 'Reset action button';
+        explanationKo = '초기화 동작 버튼';
+      } else if (hasKeyword(['confirm', '확인', 'ok'])) {
+        text += 'Confirm';
+        textKo += '확인';
+        explanation = 'Confirmation action button';
+        explanationKo = '확인 동작 버튼';
+      } else if (hasKeyword(['cancel', '취소'])) {
+        text += 'Cancel';
+        textKo += '취소';
+        explanation = 'Cancel action button';
+        explanationKo = '취소 동작 버튼';
+      } else {
+        // Generic button text based on context
+        text += 'Execute';
+        textKo += '실행';
+        explanation = 'Generic action button based on context';
+        explanationKo = '상황에 따른 일반 동작 버튼';
       }
       appliedRules.push('Principle: Immediate Comprehensibility');
       break;
@@ -159,29 +189,232 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
         explanation = `Precise value with standard unit (${unit})`;
         explanationKo = `정확한 단위 표기 (${unit})`;
         appliedRules.push('Principle: Accuracy', 'FR-002: Unit specification');
+      } else {
+        // Extract parameter name from context
+        let paramName = 'Value';
+        let paramNameKo = '값';
+
+        if (hasKeyword(['temperature', '온도', 'temp'])) {
+          paramName = 'Temperature';
+          paramNameKo = '온도';
+          if (!includeUnit && !value) {
+            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (°C)`;
+            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (°C)`;
+          }
+        } else if (hasKeyword(['pressure', '압력'])) {
+          paramName = 'Pressure';
+          paramNameKo = '압력';
+          if (!includeUnit && !value) {
+            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (Torr)`;
+            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (Torr)`;
+          }
+        } else if (hasKeyword(['flow', '유량', 'rate'])) {
+          paramName = 'Flow Rate';
+          paramNameKo = '유량';
+          if (!includeUnit && !value) {
+            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (sccm)`;
+            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (sccm)`;
+          }
+        } else if (hasKeyword(['power', '전력', '파워'])) {
+          paramName = 'Power';
+          paramNameKo = '전력';
+          if (!includeUnit && !value) {
+            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (W)`;
+            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (W)`;
+          }
+        } else if (hasKeyword(['voltage', '전압'])) {
+          paramName = 'Voltage';
+          paramNameKo = '전압';
+          if (!includeUnit && !value) {
+            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (V)`;
+            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (V)`;
+          }
+        }
+
+        if (!text) {
+          text = `${paramName}`;
+          textKo = `${paramNameKo}`;
+        }
+
+        explanation = `Parameter label with standard unit notation`;
+        explanationKo = `표준 단위 표기법을 적용한 파라미터 라벨`;
+        appliedRules.push('Principle: Accuracy');
       }
       break;
 
     case 'alert':
+      // Determine alert prefix based on safety level
       if (safetyLevel === 'critical') {
-        text += 'IMMEDIATE ACTION REQUIRED: ';
+        text += 'IMMEDIATE ACTION: ';
         textKo += '즉시 대응: ';
         appliedRules.push('FR-004: Safety emphasis', 'Principle: Safety');
+      } else if (safetyLevel === 'danger') {
+        text += 'DANGER: ';
+        textKo += '위험: ';
+        appliedRules.push('Principle: Safety');
+      } else if (safetyLevel === 'warning') {
+        text += 'WARNING: ';
+        textKo += '경고: ';
+        appliedRules.push('Principle: Safety');
+      } else if (safetyLevel === 'blocked') {
+        text += 'BLOCKED: ';
+        textKo += '차단: ';
+        appliedRules.push('Principle: Safety');
       }
+
+      // Generate alert message based on context
+      if (hasKeyword(['temperature', '온도']) && hasKeyword(['high', 'exceed', '높', '초과', 'over'])) {
+        const alertText = value && includeUnit ?
+          `Temperature exceeds limit (${value}${UNITS[includeUnit]})` :
+          'Chamber temperature too high';
+        const alertTextKo = value && includeUnit ?
+          `온도 한계 초과 (${value}${UNITS[includeUnit]})` :
+          '챔버 온도 과다';
+        text += alertText;
+        textKo += alertTextKo;
+        explanation = 'Safety alert with specific issue and value';
+        explanationKo = '구체적인 문제와 값을 포함한 안전 경고';
+      } else if (hasKeyword(['pressure', '압력']) && hasKeyword(['high', 'exceed', '높', '초과', 'over'])) {
+        const alertText = value && includeUnit ?
+          `Pressure exceeds limit (${value}${UNITS[includeUnit]})` :
+          'Chamber pressure too high';
+        const alertTextKo = value && includeUnit ?
+          `압력 한계 초과 (${value}${UNITS[includeUnit]})` :
+          '챔버 압력 과다';
+        text += alertText;
+        textKo += alertTextKo;
+        explanation = 'Safety alert with specific issue and value';
+        explanationKo = '구체적인 문제와 값을 포함한 안전 경고';
+      } else if (hasKeyword(['error', '오류', 'fault', '장애'])) {
+        text += 'System error detected';
+        textKo += '시스템 오류 감지';
+        explanation = 'Error alert message';
+        explanationKo = '오류 알림 메시지';
+      } else if (hasKeyword(['door', '도어', 'open', '열림'])) {
+        text += 'Door open - Interlock active';
+        textKo += '도어 열림 - 인터락 활성';
+        explanation = 'Safety interlock alert';
+        explanationKo = '안전 인터락 경고';
+      } else {
+        // Generic alert based on context
+        text += 'Check system status';
+        textKo += '시스템 상태 확인';
+        explanation = 'Generic alert message based on context';
+        explanationKo = '상황에 따른 일반 경고 메시지';
+      }
+      appliedRules.push('Principle: Immediate Comprehensibility');
       break;
 
     case 'status':
-      // Status will use STATUS_INDICATORS
-      appliedRules.push('FR-008: Standard status indicators');
+      if (hasKeyword(['running', '실행', 'active', '작동'])) {
+        text = '🟢 Running';
+        textKo = '🟢 실행 중';
+        explanation = 'Active process status';
+        explanationKo = '활성 프로세스 상태';
+      } else if (hasKeyword(['stopped', '정지', 'idle', '대기'])) {
+        text = '⚪ Stopped';
+        textKo = '⚪ 정지';
+        explanation = 'Stopped status';
+        explanationKo = '정지 상태';
+      } else if (hasKeyword(['error', '오류', 'fault', '장애'])) {
+        text = '🔴 Error';
+        textKo = '🔴 오류';
+        explanation = 'Error status';
+        explanationKo = '오류 상태';
+      } else if (hasKeyword(['warning', '경고', 'caution', '주의'])) {
+        text = '🟡 Warning';
+        textKo = '🟡 경고';
+        explanation = 'Warning status';
+        explanationKo = '경고 상태';
+      } else if (hasKeyword(['ready', '준비', 'standby'])) {
+        text = '🟢 Ready';
+        textKo = '🟢 준비';
+        explanation = 'Ready status';
+        explanationKo = '준비 상태';
+      } else if (hasKeyword(['processing', '처리', 'in progress', '진행'])) {
+        text = '🔵 Processing';
+        textKo = '🔵 처리 중';
+        explanation = 'Processing status';
+        explanationKo = '처리 중 상태';
+      } else if (hasKeyword(['complete', '완료', 'finished', 'done'])) {
+        text = '✅ Complete';
+        textKo = '✅ 완료';
+        explanation = 'Complete status';
+        explanationKo = '완료 상태';
+      } else {
+        text = 'Status';
+        textKo = '상태';
+        explanation = 'Generic status indicator';
+        explanationKo = '일반 상태 표시';
+      }
+      appliedRules.push('FR-008: Standard status indicators', 'Principle: Immediate Comprehensibility');
+      break;
+
+    case 'input':
+      if (hasKeyword(['temperature', '온도'])) {
+        text = includeUnit ? `Temperature (${UNITS[includeUnit]})` : 'Temperature (°C)';
+        textKo = includeUnit ? `온도 (${UNITS[includeUnit]})` : '온도 (°C)';
+        explanation = 'Input field label with unit';
+        explanationKo = '단위가 포함된 입력 필드 라벨';
+      } else if (hasKeyword(['pressure', '압력'])) {
+        text = includeUnit ? `Pressure (${UNITS[includeUnit]})` : 'Pressure (Torr)';
+        textKo = includeUnit ? `압력 (${UNITS[includeUnit]})` : '압력 (Torr)';
+        explanation = 'Input field label with unit';
+        explanationKo = '단위가 포함된 입력 필드 라벨';
+      } else if (hasKeyword(['flow', '유량'])) {
+        text = includeUnit ? `Flow Rate (${UNITS[includeUnit]})` : 'Flow Rate (sccm)';
+        textKo = includeUnit ? `유량 (${UNITS[includeUnit]})` : '유량 (sccm)';
+        explanation = 'Input field label with unit';
+        explanationKo = '단위가 포함된 입력 필드 라벨';
+      } else {
+        text = 'Input Value';
+        textKo = '입력 값';
+        explanation = 'Generic input field label';
+        explanationKo = '일반 입력 필드 라벨';
+      }
+      appliedRules.push('Principle: Accuracy', 'FR-002: Unit specification');
+      break;
+
+    case 'action':
+      if (hasKeyword(['adjust', '조절', 'control', '제어'])) {
+        text = 'Adjust';
+        textKo = '조절';
+        explanation = 'Adjustment action';
+        explanationKo = '조절 동작';
+      } else if (hasKeyword(['monitor', '모니터', 'watch', '감시'])) {
+        text = 'Monitor';
+        textKo = '모니터';
+        explanation = 'Monitoring action';
+        explanationKo = '모니터링 동작';
+      } else if (hasKeyword(['check', '확인', 'verify', '검증'])) {
+        text = 'Check';
+        textKo = '확인';
+        explanation = 'Verification action';
+        explanationKo = '확인 동작';
+      } else {
+        text = 'Execute';
+        textKo = '실행';
+        explanation = 'Generic action';
+        explanationKo = '일반 동작';
+      }
+      appliedRules.push('Principle: Immediate Comprehensibility');
       break;
   }
 
+  // Ensure we always have some text
+  if (!text.trim()) {
+    text = 'System';
+    textKo = '시스템';
+    explanation = 'Default text generated';
+    explanationKo = '기본 텍스트 생성됨';
+  }
+
   return {
-    text,
-    textKo,
+    text: text.trim(),
+    textKo: textKo.trim(),
     explanation: explanation || 'Generated following IPS guidelines',
     explanationKo: explanationKo || 'IPS 가이드라인에 따라 생성됨',
-    appliedRules,
+    appliedRules: appliedRules.length > 0 ? appliedRules : ['Principle: Immediate Comprehensibility'],
   };
 }
 
