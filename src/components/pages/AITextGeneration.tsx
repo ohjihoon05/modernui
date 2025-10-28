@@ -236,6 +236,14 @@ export function AITextGeneration() {
                     </div>
                   </div>
 
+                  {/* Input Context Display */}
+                  <div className="space-y-2">
+                    <Label className="text-foreground/80">Input Context / 입력 상황</Label>
+                    <div className="p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
+                      <p className="text-sm text-foreground/80">{context}</p>
+                    </div>
+                  </div>
+
                   {/* Explanation */}
                   <div className="space-y-2">
                     <Label className="text-foreground/80">Explanation / 설명</Label>
