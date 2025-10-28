@@ -167,7 +167,7 @@ export function AITextGeneration() {
                   <Sparkles className="w-4 h-4 mr-2" />
                   Generate Text / 텍스트 생성
                 </Button>
-                <Button onClick={handleClear} variant="outline" className="border-border text-foreground hover:bg-muted">
+                <Button onClick={handleClear} variant="secondary" className="bg-muted hover:bg-muted/70 text-foreground">
                   Clear / 초기화
                 </Button>
               </div>
