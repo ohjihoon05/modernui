@@ -42,8 +42,12 @@ export function AITextGeneration() {
     console.log('Generated Result:', generatedResult);
     console.log('Text:', generatedResult.text);
     console.log('TextKo:', generatedResult.textKo);
+    console.log('TextZh:', generatedResult.textZh);
+    console.log('TextJa:', generatedResult.textJa);
     console.log('Text length:', generatedResult.text?.length);
     console.log('TextKo length:', generatedResult.textKo?.length);
+    console.log('TextZh length:', generatedResult.textZh?.length);
+    console.log('TextJa length:', generatedResult.textJa?.length);
     console.log('===========================');
 
     setResult(generatedResult);
@@ -230,8 +234,8 @@ export function AITextGeneration() {
               {result ? (
                 <div className="space-y-6">
                   {/* Generated Text Display */}
-                  <div className="p-6 bg-green-500/5 rounded-lg border border-green-500/20">
-                    <div className="mb-4">
+                  <div className="p-6 bg-green-500/5 rounded-lg border border-green-500/20 space-y-4">
+                    <div>
                       <Label className="text-sm text-muted-foreground">English</Label>
                       <div className="text-2xl font-semibold text-foreground mt-1">
                         {result.text && result.text.trim() ? result.text : '[No text generated - please check inputs]'}
@@ -241,6 +245,18 @@ export function AITextGeneration() {
                       <Label className="text-sm text-muted-foreground">한국어</Label>
                       <div className="text-2xl font-semibold text-foreground mt-1">
                         {result.textKo && result.textKo.trim() ? result.textKo : '[텍스트 미생성 - 입력값 확인 필요]'}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">中文</Label>
+                      <div className="text-2xl font-semibold text-foreground mt-1">
+                        {result.textZh && result.textZh.trim() ? result.textZh : '[未生成文本 - 请检查输入]'}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">日本語</Label>
+                      <div className="text-2xl font-semibold text-foreground mt-1">
+                        {result.textJa && result.textJa.trim() ? result.textJa : '[テキスト未生成 - 入力を確認してください]'}
                       </div>
                     </div>
                   </div>
@@ -255,10 +271,12 @@ export function AITextGeneration() {
 
                   {/* Explanation */}
                   <div className="space-y-2">
-                    <Label className="text-foreground/80">Explanation / 설명</Label>
-                    <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                    <Label className="text-foreground/80">Explanation / 设明 / 設明 / 説明</Label>
+                    <div className="p-4 bg-muted/50 rounded-lg border border-border space-y-2">
                       <p className="text-sm text-foreground/80">{result.explanation}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{result.explanationKo}</p>
+                      <p className="text-sm text-muted-foreground">{result.explanationKo}</p>
+                      <p className="text-sm text-muted-foreground">{result.explanationZh}</p>
+                      <p className="text-sm text-muted-foreground">{result.explanationJa}</p>
                     </div>
                   </div>
 
