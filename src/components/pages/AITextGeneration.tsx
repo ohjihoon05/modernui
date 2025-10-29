@@ -49,7 +49,7 @@ export function AITextGeneration() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 md:px-14 3xl:px-20 max-sm:!px-1 pt-[10vh] md:pt-[15vh]">
+    <div className="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-12 pt-[10vh] md:pt-[15vh]">
       <div className="w-full max-w-2xl mx-auto">
         {/* Header */}
         {!result && (
