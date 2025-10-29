@@ -59,8 +59,8 @@ export function TemplateGallery() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 lg:mb-8">
+    <div className="p-4 sm:p-6 lg:p-12">
+      <div className="mb-6 lg:mb-12">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-foreground">원익IPS Component Templates</h2>
@@ -75,7 +75,7 @@ export function TemplateGallery() {
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row gap-2 sm:gap-4">
+      <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="relative flex-1 sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -153,7 +153,7 @@ export function TemplateGallery() {
                 {/* Guidelines Summary */}
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-foreground/80">Key Guidelines / 주요 가이드라인:</p>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {template.guidelines.slice(0, 2).map((guideline, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
@@ -196,7 +196,7 @@ export function TemplateGallery() {
           {selectedTemplate && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-foreground">
+                <DialogTitle className="flex items-center gap-3 text-foreground">
                   <span className="text-3xl">{getTypeIcon(selectedTemplate.componentType)}</span>
                   <div>
                     <div>{selectedTemplate.name}</div>
@@ -208,11 +208,11 @@ export function TemplateGallery() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 mt-4">
+              <div className="space-y-6 mt-4">
                 {/* All Examples */}
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-3">Examples / 예시</h3>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {selectedTemplate.examples.map((example, index) => (
                       <Card key={index} className="bg-muted/50 border-border">
                         <CardContent className="pt-4">
@@ -238,7 +238,7 @@ export function TemplateGallery() {
                 {/* Guidelines */}
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-3">Guidelines / 가이드라인</h3>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {selectedTemplate.guidelines.map((guideline, index) => (
                       <div key={index} className="flex items-start gap-3 p-3 bg-blue-500/5 rounded border border-blue-500/20">
                         <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-blue-600 dark:text-blue-400 mt-0.5" />
