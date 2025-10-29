@@ -10,10 +10,10 @@ interface SidebarProps {
 
 export function Sidebar({ activePage, setActivePage, isDarkMode, setIsDarkMode }: SidebarProps) {
   const menuItems = [
-    { id: 'ai-text' as const, icon: Sparkles, label: 'AI Text Generation', labelKo: 'AI 텍스트 생성' },
-    { id: 'content' as const, icon: FileText, label: 'Content Management', labelKo: '콘텐츠 관리' },
-    { id: 'validation' as const, icon: CheckCircle2, label: 'Text Validation', labelKo: '텍스트 검증' },
-    { id: 'templates' as const, icon: LayoutTemplate, label: 'Template Gallery', labelKo: '템플릿 갤러리' },
+    { id: 'ai-text' as const, icon: Sparkles, label: 'AI Text Generation', labelKo: 'AI 텍스트 생성', labelZh: 'AI文本生成', labelJa: 'AIテキスト生成' },
+    { id: 'content' as const, icon: FileText, label: 'Content Management', labelKo: '콘텐츠 관리', labelZh: '内容管理', labelJa: 'コンテンツ管理' },
+    { id: 'validation' as const, icon: CheckCircle2, label: 'Text Validation', labelKo: '텍스트 검증', labelZh: '文本验证', labelJa: 'テキスト検証' },
+    { id: 'templates' as const, icon: LayoutTemplate, label: 'Template Gallery', labelKo: '템플릿 갤러리', labelZh: '模板库', labelJa: 'テンプレートギャラリー' },
   ];
 
   return (

@@ -37,6 +37,19 @@ export function AITextGeneration() {
       value: value || undefined,
     });
 
+    console.log('=== Text Generation Debug ===');
+    console.log('Input:', { componentType, context, safetyLevel, includeUnit, value });
+    console.log('Generated Result:', generatedResult);
+    console.log('Text:', generatedResult.text);
+    console.log('TextKo:', generatedResult.textKo);
+    console.log('TextZh:', generatedResult.textZh);
+    console.log('TextJa:', generatedResult.textJa);
+    console.log('Text length:', generatedResult.text?.length);
+    console.log('TextKo length:', generatedResult.textKo?.length);
+    console.log('TextZh length:', generatedResult.textZh?.length);
+    console.log('TextJa length:', generatedResult.textJa?.length);
+    console.log('===========================');
+
     setResult(generatedResult);
   };
 
@@ -49,19 +62,15 @@ export function AITextGeneration() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-12">
-      <div className="mb-6 lg:mb-12">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-foreground">원익IPS UX Text Generation</h2>
-            <p className="text-muted-foreground mt-2">
-              원익IPS UX 텍스트 생성 - Generate semiconductor equipment UI text following IPS guidelines
-            </p>
-          </div>
-          <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30">
-            Priority P1
-          </Badge>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 lg:p-8">
+      {/* Header */}
+      <div className="w-full max-w-3xl text-center mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+          원익IPS UX Text Generation
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Generate semiconductor equipment UI text following IPS guidelines
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
@@ -208,130 +217,166 @@ export function AITextGeneration() {
               </ul>
             </CardContent>
           </Card>
+      {/* Main Content */}
+      <div className="w-full max-w-3xl space-y-4">
+        {/* Component Type Selection - Compact Pills */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {(['button', 'alert', 'input', 'status', 'parameter', 'action', 'measurement'] as ComponentType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => setComponentType(type)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                componentType === type
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </button>
+          ))}
         </div>
 
-        {/* Output Section */}
-        <div>
-          <Card className="h-full bg-card border-border backdrop-blur-sm shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-foreground">Generated Text</CardTitle>
-              <CardDescription className="text-muted-foreground">생성된 텍스트</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {result ? (
-                <div className="space-y-6">
-                  {/* Generated Text Display */}
-                  <div className="p-6 bg-green-500/5 rounded-lg border border-green-500/20">
-                    <div className="mb-4">
-                      <Label className="text-sm text-muted-foreground">English</Label>
-                      <div className="text-2xl font-semibold text-foreground mt-1">
-                        {result.text || <span className="text-muted-foreground">N/A</span>}
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-muted-foreground">한국어</Label>
-                      <div className="text-2xl font-semibold text-foreground mt-1">
-                        {result.textKo || <span className="text-muted-foreground">N/A</span>}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Explanation */}
-                  <div className="space-y-2">
-                    <Label className="text-foreground/80">Explanation / 설명</Label>
-                    <div className="p-4 bg-muted/50 rounded-lg border border-border">
-                      <p className="text-sm text-foreground/80">{result.explanation}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{result.explanationKo}</p>
-                    </div>
-                  </div>
-
-                  {/* Applied Rules */}
-                  <div className="space-y-2">
-                    <Label className="text-foreground/80">Applied Guidelines / 적용된 가이드라인</Label>
-                    <div className="space-y-2">
-                      {result.appliedRules.map((rule, index) => (
-                        <div key={index} className="flex items-start gap-2 p-3 bg-blue-500/5 rounded border border-blue-500/20">
-                          <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-                          <span className="text-sm text-foreground/80">{rule}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4">
-                    <Button variant="outline" className="flex-1 border-border text-foreground hover:bg-muted">
-                      Copy / 복사
-                    </Button>
-                    <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-                      Save / 저장
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="min-h-[500px] flex items-center justify-center">
-                  <div className="text-center">
-                    <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-50 text-muted-foreground" />
-                    <p className="text-muted-foreground">Generated text will appear here</p>
-                    <p className="text-sm text-muted-foreground mt-1">생성된 텍스트가 여기에 표시됩니다</p>
-                    <div className="mt-6 p-4 bg-muted/30 rounded-lg max-w-md mx-auto text-left">
-                      <p className="text-xs text-muted-foreground">
-                        <strong>Example contexts:</strong>
-                      </p>
-                      <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                        <li>• 챔버 온도 설정 버튼</li>
-                        <li>• 압력 초과 긴급 알림</li>
-                        <li>• 가스 유량 입력 필드</li>
-                        <li>• 공정 실행 상태 표시</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Main Input Area */}
+        <div className="relative">
+          <Textarea
+            placeholder="예: 챔버 온도 설정 버튼, 압력 초과 알림, 가스 유량 입력..."
+            value={context}
+            onChange={(e) => setContext(e.target.value)}
+            className="min-h-[120px] resize-none bg-card border-border text-foreground placeholder:text-muted-foreground text-base px-6 py-4 pr-14 rounded-2xl shadow-sm"
+          />
+          <Button
+            onClick={handleGenerate}
+            disabled={!context.trim()}
+            className="absolute bottom-3 right-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            size="sm"
+          >
+            <Sparkles className="w-4 h-4" />
+          </Button>
         </div>
-      </div>
 
-      {/* Success Criteria Display */}
-      <Card className="mt-6 lg:mt-8 bg-card border-border backdrop-blur-sm shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-foreground">Success Criteria / 성공 기준</CardTitle>
-          <CardDescription className="text-muted-foreground">측정 가능한 결과</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+        {/* Optional Settings - Compact Row */}
+        <div className="flex flex-wrap gap-2">
+          <Select value={safetyLevel} onValueChange={(v) => setSafetyLevel(v as SafetyLevel | '' | 'none')}>
+            <SelectTrigger className="w-auto bg-card border-border text-foreground text-sm rounded-full px-4">
+              <SelectValue placeholder="Safety Level" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="critical">🚨 Critical</SelectItem>
+              <SelectItem value="danger">🔴 Danger</SelectItem>
+              <SelectItem value="warning">⚠️ Warning</SelectItem>
+              <SelectItem value="blocked">🚫 Blocked</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={includeUnit} onValueChange={(v) => setIncludeUnit(v as keyof typeof UNITS | '' | 'none')}>
+            <SelectTrigger className="w-auto bg-card border-border text-foreground text-sm rounded-full px-4">
+              <SelectValue placeholder="Unit" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border">
+              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="temperature">°C</SelectItem>
+              <SelectItem value="pressure">Torr</SelectItem>
+              <SelectItem value="flow">sccm</SelectItem>
+              <SelectItem value="power">W</SelectItem>
+              <SelectItem value="voltage">V</SelectItem>
+              <SelectItem value="current">A</SelectItem>
+              <SelectItem value="time">s</SelectItem>
+              <SelectItem value="rpm">RPM</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Input
+            type="text"
+            placeholder="Value (e.g., 350)"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-auto max-w-[140px] bg-card border-border text-foreground placeholder:text-muted-foreground text-sm rounded-full px-4"
+          />
+
+          {(context || safetyLevel !== 'none' || includeUnit !== 'none' || value) && (
+            <Button
+              onClick={handleClear}
+              variant="ghost"
+              size="sm"
+              className="rounded-full text-muted-foreground hover:text-foreground"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {/* Generated Output */}
+        {result ? (
+          <div className="space-y-4 animate-in fade-in-50 duration-500">
+            {/* Generated Text Display */}
+            <div className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
               <div>
-                <p className="text-sm font-medium text-foreground/80">SC-001: Response Time</p>
-                <p className="text-xs text-muted-foreground mt-1">Generate text within 5 seconds / 5초 이내 텍스트 생성</p>
+                <div className="text-xs text-muted-foreground mb-1">English</div>
+                <div className="text-xl font-medium text-foreground">
+                  {result.text && result.text.trim() ? result.text : '[No text generated]'}
+                </div>
+              </div>
+              <div className="h-px bg-border" />
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">한국어</div>
+                <div className="text-xl font-medium text-foreground">
+                  {result.textKo && result.textKo.trim() ? result.textKo : '[텍스트 미생성]'}
+                </div>
+              </div>
+              <div className="h-px bg-border" />
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">中文</div>
+                <div className="text-xl font-medium text-foreground">
+                  {result.textZh && result.textZh.trim() ? result.textZh : '[未生成文本]'}
+                </div>
+              </div>
+              <div className="h-px bg-border" />
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">日本語</div>
+                <div className="text-xl font-medium text-foreground">
+                  {result.textJa && result.textJa.trim() ? result.textJa : '[テキスト未生成]'}
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-              <div>
-                <p className="text-sm font-medium text-foreground/80">SC-002: Guideline Compliance</p>
-                <p className="text-xs text-muted-foreground mt-1">95%+ pass all 4 validation areas / 4개 검증 영역 95% 이상 통과</p>
+
+            {/* Explanation - Collapsible */}
+            <details className="bg-muted/30 rounded-xl p-4 group">
+              <summary className="cursor-pointer text-sm font-medium text-foreground/80 list-none flex items-center justify-between">
+                <span>Explanation</span>
+                <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="mt-2 space-y-2 text-sm text-foreground/70">
+                <p>{result.explanation}</p>
+                <p className="text-muted-foreground">{result.explanationKo}</p>
               </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-              <div>
-                <p className="text-sm font-medium text-foreground/80">SC-004: Safety Text</p>
-                <p className="text-xs text-muted-foreground mt-1">100% include warning icons and actions / 100% 경고 표시 및 대응 방법 포함</p>
+            </details>
+
+            {/* Applied Guidelines - Collapsible */}
+            <details className="bg-muted/30 rounded-xl p-4 group">
+              <summary className="cursor-pointer text-sm font-medium text-foreground/80 list-none flex items-center justify-between">
+                <span>Applied Guidelines</span>
+                <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="mt-2 space-y-2">
+                {result.appliedRules.map((rule, index) => (
+                  <div key={index} className="flex items-start gap-2 text-sm text-foreground/70">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                    <span>{rule}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-              <div>
-                <p className="text-sm font-medium text-foreground/80">SC-005: Prohibited Terms</p>
-                <p className="text-xs text-muted-foreground mt-1">100% avoid vague expressions / 100% 모호한 표현 회피</p>
-              </div>
-            </div>
+            </details>
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="text-center py-16">
+            <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-30 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Enter context and press generate to create UI text
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
