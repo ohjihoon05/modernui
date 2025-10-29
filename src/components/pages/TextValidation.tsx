@@ -96,8 +96,8 @@ export function TextValidation() {
   };
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-12">
+      <div className="mb-6 lg:mb-12">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-foreground">원익IPS Text Validation</h2>
@@ -112,7 +112,7 @@ export function TextValidation() {
       </div>
 
       {/* Input Section */}
-      <Card className="mb-8 bg-card border-border backdrop-blur-sm shadow-sm">
+      <Card className="mb-6 lg:mb-8 bg-card border-border backdrop-blur-sm shadow-sm">
         <CardHeader>
           <CardTitle className="text-foreground">Text to Validate</CardTitle>
           <CardDescription className="text-muted-foreground">검증할 텍스트 입력</CardDescription>
@@ -138,7 +138,7 @@ export function TextValidation() {
 
       {/* Overall Score */}
       {validationResults && (
-        <Card className="mb-8 bg-card border-border backdrop-blur-sm shadow-sm">
+        <Card className="mb-6 lg:mb-8 bg-card border-border backdrop-blur-sm shadow-sm">
           <CardHeader>
             <CardTitle className="text-foreground">Overall Compliance Score</CardTitle>
             <CardDescription className="text-muted-foreground">전체 가이드라인 준수도</CardDescription>
@@ -163,7 +163,7 @@ export function TextValidation() {
 
       {/* Validation Results by Category */}
       {validationResults && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 lg:mb-8">
           {validationResults.map((result, index) => {
             const categoryName = getCategoryName(result.category);
             const categoryIcon = getCategoryIcon(result.category);
@@ -204,7 +204,7 @@ export function TextValidation() {
                   </div>
 
                   {result.issues.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <h4 className="text-sm font-medium text-foreground/80">Issues Found / 발견된 문제</h4>
                       {result.issues.map((issue, issueIndex) => (
                         <div key={issueIndex} className="p-3 bg-muted/50 rounded border border-border">
@@ -244,7 +244,7 @@ export function TextValidation() {
       )}
 
       {/* Guidelines Reference */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card className="bg-card border-border backdrop-blur-sm shadow-sm">
           <CardHeader>
             <CardTitle className="text-foreground">Prohibited Expressions</CardTitle>
@@ -271,7 +271,7 @@ export function TextValidation() {
             <CardDescription className="text-muted-foreground">표준 단위</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="p-2 bg-muted/50 rounded">
                 <span className="font-medium text-foreground/80">Temperature:</span>
                 <span className="ml-2 text-blue-600 dark:text-blue-400">°C</span>
@@ -306,7 +306,7 @@ export function TextValidation() {
       </div>
 
       {/* Success Criteria */}
-      <Card className="mt-8 bg-card border-border backdrop-blur-sm shadow-sm">
+      <Card className="mt-6 lg:mt-8 bg-card border-border backdrop-blur-sm shadow-sm">
         <CardHeader>
           <CardTitle className="text-foreground">Success Criteria / 성공 기준</CardTitle>
           <CardDescription className="text-muted-foreground">측정 가능한 결과</CardDescription>
