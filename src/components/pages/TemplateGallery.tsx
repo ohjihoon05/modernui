@@ -59,8 +59,8 @@ export function TemplateGallery() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 lg:mb-8">
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-foreground">원익IPS Component Templates</h2>
@@ -75,7 +75,7 @@ export function TemplateGallery() {
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row gap-2 sm:gap-4">
+      <div className="mb-8 flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -111,7 +111,7 @@ export function TemplateGallery() {
       </div>
 
       {/* Template Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {filteredTemplates.map((template) => {
           const typeIcon = getTypeIcon(template.componentType);
           const typeLabel = getTypeLabel(template.componentType);
@@ -267,7 +267,7 @@ export function TemplateGallery() {
       </Dialog>
 
       {/* Information Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-6 lg:mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <Card className="bg-card border-border backdrop-blur-sm shadow-sm">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">

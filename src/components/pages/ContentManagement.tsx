@@ -98,8 +98,8 @@ export function ContentManagement() {
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="p-6 lg:p-8">
+      <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-foreground">Content Management</h2>
           <p className="text-muted-foreground mt-2">콘텐츠 관리 - Manage and organize your content</p>
@@ -111,7 +111,7 @@ export function ContentManagement() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-6 lg:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="bg-card border-border backdrop-blur-sm shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
