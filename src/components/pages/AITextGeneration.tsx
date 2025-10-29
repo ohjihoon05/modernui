@@ -62,7 +62,7 @@ export function AITextGeneration() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 lg:p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
       {/* Header */}
       <div className="w-full max-w-3xl text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
@@ -73,150 +73,6 @@ export function AITextGeneration() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-        {/* Input Section */}
-        <div className="space-y-4 sm:space-y-6">
-          <Card className="bg-card border-border backdrop-blur-sm shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-foreground">Input Settings</CardTitle>
-              <CardDescription className="text-muted-foreground">입력 설정</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="component-type" className="text-foreground/80">
-                  Component Type / 컴포넌트 유형
-                </Label>
-                <Select value={componentType} onValueChange={(v) => setComponentType(v as ComponentType)}>
-                  <SelectTrigger id="component-type" className="bg-input-background border-border text-foreground">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="button">Button / 버튼</SelectItem>
-                    <SelectItem value="alert">Alert / 알림</SelectItem>
-                    <SelectItem value="input">Input Field / 입력 필드</SelectItem>
-                    <SelectItem value="status">Status / 상태 표시</SelectItem>
-                    <SelectItem value="parameter">Parameter / 파라미터</SelectItem>
-                    <SelectItem value="action">Action / 동작</SelectItem>
-                    <SelectItem value="measurement">Measurement / 측정값</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="context" className="text-foreground/80">
-                  Context / 상황 설명
-                </Label>
-                <Textarea
-                  id="context"
-                  placeholder="예: 챔버 온도 설정 버튼, 압력 초과 알림, 가스 유량 입력"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  className="min-h-[100px] resize-none bg-input-background border-border text-foreground placeholder:text-muted-foreground"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="safety-level" className="text-foreground/80">
-                  Safety Level / 안전 수준 (Optional)
-                </Label>
-                <Select value={safetyLevel} onValueChange={(v) => setSafetyLevel(v as SafetyLevel | '' | 'none')}>
-                  <SelectTrigger id="safety-level" className="bg-input-background border-border text-foreground">
-                    <SelectValue placeholder="Select if safety-related... / 안전 관련 시 선택" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="none">None / 없음</SelectItem>
-                    <SelectItem value="critical">🚨 Critical / 긴급</SelectItem>
-                    <SelectItem value="danger">🔴 Danger / 위험</SelectItem>
-                    <SelectItem value="warning">⚠️ Warning / 경고</SelectItem>
-                    <SelectItem value="blocked">🚫 Blocked / 차단</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="unit" className="text-foreground/80">
-                    Unit / 단위 (Optional)
-                  </Label>
-                  <Select value={includeUnit} onValueChange={(v) => setIncludeUnit(v as keyof typeof UNITS | '' | 'none')}>
-                    <SelectTrigger id="unit" className="bg-input-background border-border text-foreground">
-                      <SelectValue placeholder="Select unit..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border">
-                      <SelectItem value="none">None / 없음</SelectItem>
-                      <SelectItem value="temperature">°C (Temperature)</SelectItem>
-                      <SelectItem value="pressure">Torr (Pressure)</SelectItem>
-                      <SelectItem value="flow">sccm (Flow)</SelectItem>
-                      <SelectItem value="power">W (Power)</SelectItem>
-                      <SelectItem value="voltage">V (Voltage)</SelectItem>
-                      <SelectItem value="current">A (Current)</SelectItem>
-                      <SelectItem value="time">s (Time)</SelectItem>
-                      <SelectItem value="rpm">RPM (Rotation)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="value" className="text-foreground/80">
-                    Value / 값 (Optional)
-                  </Label>
-                  <Input
-                    id="value"
-                    type="text"
-                    placeholder="e.g., 350, 450±2"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    className="bg-input-background border-border text-foreground placeholder:text-muted-foreground"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button onClick={handleGenerate} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Text / 텍스트 생성
-                </Button>
-                <Button onClick={handleClear} variant="secondary" className="bg-muted hover:bg-muted/70 text-foreground">
-                  Clear / 초기화
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Guidelines Info */}
-          <Card className="bg-card border-border backdrop-blur-sm shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-foreground flex items-center gap-2">
-                <Info className="w-5 h-5" />
-                IPS UX Writing Principles
-              </CardTitle>
-              <CardDescription className="text-muted-foreground">5대 핵심 원칙</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-foreground/80">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                  <span><strong>Accuracy</strong> / 정확성: Precise values and units</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                  <span><strong>Safety</strong> / 안전성: Clear warnings and icons</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                  <span><strong>Immediate Comprehensibility</strong> / 즉시 이해 가능성</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                  <span><strong>Consistency</strong> / 일관성: Standard terminology</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                  <span><strong>Hierarchical Structure</strong> / 계층적 정보 구조</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
       {/* Main Content */}
       <div className="w-full max-w-3xl space-y-4">
         {/* Component Type Selection - Compact Pills */}
@@ -310,7 +166,7 @@ export function AITextGeneration() {
         {result ? (
           <div className="space-y-4 animate-in fade-in-50 duration-500">
             {/* Generated Text Display */}
-            <div className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">English</div>
                 <div className="text-xl font-medium text-foreground">
@@ -346,7 +202,7 @@ export function AITextGeneration() {
                 <span>Explanation</span>
                 <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="mt-2 space-y-2 text-sm text-foreground/70">
+              <div className="mt-3 space-y-2 text-sm text-foreground/70">
                 <p>{result.explanation}</p>
                 <p className="text-muted-foreground">{result.explanationKo}</p>
               </div>
@@ -358,7 +214,7 @@ export function AITextGeneration() {
                 <span>Applied Guidelines</span>
                 <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="mt-2 space-y-2">
+              <div className="mt-3 space-y-2">
                 {result.appliedRules.map((rule, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm text-foreground/70">
                     <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
