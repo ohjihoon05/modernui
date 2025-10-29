@@ -73,7 +73,7 @@ export function AITextGeneration() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Describe the UI component you need text for..."
-                className="min-h-[120px] sm:min-h-[140px] w-full resize-none bg-card border-border text-foreground placeholder:text-muted-foreground text-base sm:text-lg p-4 sm:p-6 pr-14 rounded-2xl shadow-lg focus:ring-2 focus:ring-primary/20"
+                className="min-h-[80px] sm:min-h-[100px] w-full resize-none bg-card border-border text-foreground placeholder:text-muted-foreground text-base sm:text-lg p-4 sm:p-6 pr-14 rounded-3xl shadow-lg focus:ring-2 focus:ring-primary/20"
                 disabled={isGenerating}
               />
               <Button
