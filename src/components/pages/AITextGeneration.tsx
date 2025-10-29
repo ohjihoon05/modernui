@@ -49,8 +49,8 @@ export function AITextGeneration() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-3xl mx-auto">
+    <div className="min-h-screen flex flex-col items-center justify-center px-8 py-4 sm:px-12 sm:py-6 lg:px-20 lg:py-8">
+      <div className="w-full max-w-2xl mx-auto">
         {/* Header */}
         {!result && (
           <div className="text-center mb-8 sm:mb-12">
