@@ -166,7 +166,7 @@ export function AITextGeneration() {
         {result ? (
           <div className="space-y-4 animate-in fade-in-50 duration-500">
             {/* Generated Text Display */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">English</div>
                 <div className="text-xl font-medium text-foreground">
@@ -202,7 +202,7 @@ export function AITextGeneration() {
                 <span>Explanation</span>
                 <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="mt-3 space-y-2 text-sm text-foreground/70">
+              <div className="mt-2 space-y-2 text-sm text-foreground/70">
                 <p>{result.explanation}</p>
                 <p className="text-muted-foreground">{result.explanationKo}</p>
               </div>
@@ -214,7 +214,7 @@ export function AITextGeneration() {
                 <span>Applied Guidelines</span>
                 <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="mt-3 space-y-2">
+              <div className="mt-2 space-y-2">
                 {result.appliedRules.map((rule, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm text-foreground/70">
                     <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-green-400" />
