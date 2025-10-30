@@ -1,14 +1,23 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import {
   generateIPSText,
   TextGenerationResult,
+  UsageType,
 } from '../../utils/ipsGuidelines';
 
 export function AITextGeneration() {
   const [input, setInput] = useState('');
+  const [usageType, setUsageType] = useState<UsageType | ''>('');
   const [result, setResult] = useState<TextGenerationResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -24,6 +33,7 @@ export function AITextGeneration() {
       // Auto-infer componentType, safetyLevel, and units from context
       const generatedResult = generateIPSText({
         context: input,
+        usageType: usageType || undefined,
         // componentType, safetyLevel, includeUnit, value are auto-inferred
       });
 
@@ -40,10 +50,10 @@ export function AITextGeneration() {
   };
 
   const examplePrompts = [
-    '챔버 온도 설정 버튼',
-    '압력 초과 알림',
-    '가스 유량 입력 필드',
-    '공정 실행 상태 표시'
+    { text: '챔버 온도 설정 버튼', type: 'button' as UsageType },
+    { text: '압력 초과 알림', type: 'alert' as UsageType },
+    { text: 'TC별 알람 범위 설정 설명', type: 'manual' as UsageType },
+    { text: '공정 실행 상태 표시', type: 'parameter' as UsageType },
   ];
 
   return (
@@ -65,19 +75,34 @@ export function AITextGeneration() {
         <div className="space-y-4">
           {/* Input Area */}
           {!result && (
-            <div className="relative">
+            <div className="flex gap-3 items-center bg-card border-border rounded-3xl shadow-lg p-4 sm:p-6">
+              <Select value={usageType} onValueChange={(value) => setUsageType(value as UsageType)}>
+                <SelectTrigger className="w-[140px] sm:w-[160px] rounded-xl border-border bg-input-background">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="button">🔘 Button</SelectItem>
+                  <SelectItem value="popup">💬 Popup</SelectItem>
+                  <SelectItem value="alert">⚠️ Alert</SelectItem>
+                  <SelectItem value="manual">📄 Manual</SelectItem>
+                  <SelectItem value="parameter">📊 Parameter</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Describe the UI component you need text for..."
-                className="min-h-[80px] sm:min-h-[100px] w-full resize-none bg-card border-border text-foreground placeholder:text-muted-foreground text-base sm:text-lg p-4 sm:p-6 pr-14 rounded-3xl shadow-lg focus:ring-2 focus:ring-primary/20"
+                placeholder="Describe the UI component..."
+                className="flex-1 resize-none bg-transparent border-0 text-foreground placeholder:text-muted-foreground text-base sm:text-lg p-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px]"
                 disabled={isGenerating}
+                rows={1}
               />
+
               <Button
                 onClick={handleGenerate}
                 disabled={!input.trim() || isGenerating}
-                className="absolute bottom-4 right-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shrink-0"
                 size="icon"
               >
                 {isGenerating ? (
@@ -95,10 +120,13 @@ export function AITextGeneration() {
               {examplePrompts.map((prompt, index) => (
                 <button
                   key={index}
-                  onClick={() => setInput(prompt)}
+                  onClick={() => {
+                    setInput(prompt.text);
+                    setUsageType(prompt.type);
+                  }}
                   className="px-4 py-2 text-sm rounded-full bg-muted/50 hover:bg-muted text-foreground/80 hover:text-foreground transition-colors border border-border"
                 >
-                  {prompt}
+                  {prompt.text}
                 </button>
               ))}
             </div>
@@ -155,6 +183,7 @@ export function AITextGeneration() {
                   onClick={() => {
                     setResult(null);
                     setInput('');
+                    setUsageType('');
                   }}
                   variant="outline"
                   className="flex-1 rounded-xl border-border text-foreground hover:bg-muted"
