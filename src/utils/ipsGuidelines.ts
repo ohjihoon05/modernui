@@ -7,7 +7,11 @@
  * 3. Immediate Comprehensibility (즉시 이해 가능성)
  * 4. Consistency (일관성)
  * 5. Hierarchical Information Structure (계층적 정보 구조)
+ *
+ * This file now uses OpenWebUI AI to generate guideline text instead of hardcoded responses.
  */
+
+import { generateIPSTextWithAI } from './openwebuiClient';
 
 // Component types for semiconductor equipment UI
 export type ComponentType =
@@ -115,6 +119,19 @@ export interface TextGenerationRequest {
   includeUnit?: keyof typeof UNITS;
   value?: number | string;
   usageType?: UsageType;  // Usage context for text generation
+}
+
+// Text generation result
+export interface TextGenerationResult {
+  text: string;
+  textKo: string;
+  textZh: string;
+  textJa: string;
+  explanation: string;
+  explanationKo: string;
+  explanationZh: string;
+  explanationJa: string;
+  appliedRules: string[];
 }
 
 /**
@@ -334,545 +351,56 @@ export function inferUnitType(context: string): keyof typeof UNITS | undefined {
   return undefined;
 }
 
-// Text generation result
-export interface TextGenerationResult {
-  text: string;
-  textKo: string;
-  textZh: string;
-  textJa: string;
-  explanation: string;
-  explanationKo: string;
-  explanationZh: string;
-  explanationJa: string;
-  appliedRules: string[];
-}
-
 /**
- * Generate UX text following IPS guidelines
+ * Generate UX text following IPS guidelines using OpenWebUI AI
+ *
+ * All hardcoded text generation logic has been removed and replaced with AI generation.
  */
-export function generateIPSText(request: TextGenerationRequest): TextGenerationResult {
+export async function generateIPSText(request: TextGenerationRequest): Promise<TextGenerationResult> {
   // Auto-infer missing parameters from context
   const componentType = request.componentType || inferComponentType(request.context);
   const safetyLevel = request.safetyLevel || inferSafetyLevel(request.context);
   const includeUnit = request.includeUnit || inferUnitType(request.context);
-  const { context, value } = request;
+  const { context, value, usageType } = request;
 
-  console.log('[generateIPSText] Starting generation with:', { componentType, context, safetyLevel, includeUnit, value });
-  console.log('[generateIPSText] Auto-inferred:', {
-    componentType: request.componentType ? 'provided' : 'inferred',
-    safetyLevel: request.safetyLevel ? 'provided' : (safetyLevel ? 'inferred' : 'none'),
-    includeUnit: request.includeUnit ? 'provided' : (includeUnit ? 'inferred' : 'none'),
+  console.log('[generateIPSText] Starting AI generation with:', {
+    componentType,
+    context,
+    safetyLevel,
+    includeUnit,
+    value,
+    usageType
   });
 
-  let text = '';
-  let textKo = '';
-  let textZh = '';
-  let textJa = '';
-  let explanation = '';
-  let explanationKo = '';
-  let explanationZh = '';
-  let explanationJa = '';
-  const appliedRules: string[] = [];
+  try {
+    // Call OpenWebUI API to generate text
+    const result = await generateIPSTextWithAI({
+      componentType,
+      context,
+      safetyLevel,
+      includeUnit,
+      value,
+      usageType,
+    });
 
-  // Apply safety icon if safety level is specified
-  if (safetyLevel) {
-    const icon = SAFETY_ICONS[safetyLevel];
-    text = `${icon} `;
-    textKo = `${icon} `;
-    textZh = `${icon} `;
-    textJa = `${icon} `;
-    appliedRules.push('Safety icon applied');
-    console.log('[generateIPSText] Safety icon added:', { text, textKo, textZh, textJa });
+    console.log('[generateIPSText] AI generation successful:', result);
+    return result;
+  } catch (error) {
+    console.error('[generateIPSText] AI generation failed:', error);
+
+    // Return error result
+    return {
+      text: 'ERROR: AI generation failed',
+      textKo: 'ERROR: AI 생성 실패',
+      textZh: 'ERROR: AI生成失败',
+      textJa: 'ERROR: AI生成失敗',
+      explanation: `AI generation failed: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API key configuration in .env file.`,
+      explanationKo: `AI 생성 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}. .env 파일에서 API 키 설정을 확인하세요.`,
+      explanationZh: `AI生成失败: ${error instanceof Error ? error.message : '未知错误'}。请在.env文件中检查您的API密钥配置。`,
+      explanationJa: `AI生成失敗: ${error instanceof Error ? error.message : '不明なエラー'}。.envファイルでAPIキーの設定を確認してください。`,
+      appliedRules: ['Error: AI Generation Failed'],
+    };
   }
-
-  // Helper function to detect keywords in context
-  const hasKeyword = (keywords: string[]) =>
-    keywords.some(keyword => context.toLowerCase().includes(keyword));
-
-  // Generate text based on component type
-  switch (componentType) {
-    case 'button':
-      if (hasKeyword(['start', '시작', 'begin', '개시'])) {
-        text += 'Start';
-        textKo += '시작';
-        textZh += '开始';
-        textJa += '開始';
-        explanation = 'Clear action verb for starting operation';
-        explanationKo = '동작 시작을 명확히 표현';
-        explanationZh = '清晰表达操作开始';
-        explanationJa = '操作開始を明確に表現';
-      } else if (hasKeyword(['stop', '정지', 'halt'])) {
-        text += 'Stop';
-        textKo += '정지';
-        textZh += '停止';
-        textJa += '停止';
-        explanation = 'Clear action verb for stopping operation';
-        explanationKo = '동작 정지를 명확히 표현';
-        explanationZh = '清晰表达操作停止';
-        explanationJa = '操作停止を明確に表現';
-      } else if (hasKeyword(['emergency', '긴급', '비상'])) {
-        text += 'Emergency Stop';
-        textKo += '긴급 정지';
-        textZh += '紧急停止';
-        textJa += '緊急停止';
-        explanation = 'Emergency action button with clear urgency';
-        explanationKo = '긴급 동작 버튼으로 명확한 긴급성 표현';
-        explanationZh = '紧急操作按钮，清晰表达紧迫性';
-        explanationJa = '緊急操作ボタンで緊急性を明確に表現';
-      } else if (hasKeyword(['reset', '리셋', '재설정', '초기화'])) {
-        text += 'Reset';
-        textKo += '초기화';
-        textZh += '重置';
-        textJa += 'リセット';
-        explanation = 'Reset action button';
-        explanationKo = '초기화 동작 버튼';
-        explanationZh = '重置操作按钮';
-        explanationJa = 'リセット操作ボタン';
-      } else if (hasKeyword(['confirm', '확인', 'ok'])) {
-        text += 'Confirm';
-        textKo += '확인';
-        textZh += '确认';
-        textJa += '確認';
-        explanation = 'Confirmation action button';
-        explanationKo = '확인 동작 버튼';
-        explanationZh = '确认操作按钮';
-        explanationJa = '確認操作ボタン';
-      } else if (hasKeyword(['cancel', '취소'])) {
-        text += 'Cancel';
-        textKo += '취소';
-        textZh += '取消';
-        textJa += 'キャンセル';
-        explanation = 'Cancel action button';
-        explanationKo = '취소 동작 버튼';
-        explanationZh = '取消操作按钮';
-        explanationJa = 'キャンセル操作ボタン';
-      } else {
-        // Generic button text based on context
-        text += 'Execute';
-        textKo += '실행';
-        textZh += '执行';
-        textJa += '実行';
-        explanation = 'Generic action button based on context';
-        explanationKo = '상황에 따른 일반 동작 버튼';
-        explanationZh = '基于上下文的通用操作按钮';
-        explanationJa = 'コンテキストに基づく汎用操作ボタン';
-      }
-      appliedRules.push('Principle: Immediate Comprehensibility');
-      break;
-
-    case 'parameter':
-    case 'measurement':
-      if (value !== undefined && includeUnit) {
-        const unit = UNITS[includeUnit];
-        text = `${value}${unit}`;
-        textKo = `${value}${unit}`;
-        textZh = `${value}${unit}`;
-        textJa = `${value}${unit}`;
-        explanation = `Precise value with standard unit (${unit})`;
-        explanationKo = `정확한 단위 표기 (${unit})`;
-        explanationZh = `精确值与标准单位 (${unit})`;
-        explanationJa = `標準単位による正確な値 (${unit})`;
-        appliedRules.push('Principle: Accuracy', 'FR-002: Unit specification');
-      } else {
-        // Extract parameter name from context
-        let paramName = 'Value';
-        let paramNameKo = '값';
-        let paramNameZh = '值';
-        let paramNameJa = '値';
-
-        if (hasKeyword(['temperature', '온도', 'temp'])) {
-          paramName = 'Temperature';
-          paramNameKo = '온도';
-          paramNameZh = '温度';
-          paramNameJa = '温度';
-          if (!includeUnit && !value) {
-            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (°C)`;
-            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (°C)`;
-            textZh = includeUnit ? `${paramNameZh} (${UNITS[includeUnit]})` : `${paramNameZh} (°C)`;
-            textJa = includeUnit ? `${paramNameJa} (${UNITS[includeUnit]})` : `${paramNameJa} (°C)`;
-          }
-        } else if (hasKeyword(['pressure', '압력'])) {
-          paramName = 'Pressure';
-          paramNameKo = '압력';
-          paramNameZh = '压力';
-          paramNameJa = '圧力';
-          if (!includeUnit && !value) {
-            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (Torr)`;
-            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (Torr)`;
-            textZh = includeUnit ? `${paramNameZh} (${UNITS[includeUnit]})` : `${paramNameZh} (Torr)`;
-            textJa = includeUnit ? `${paramNameJa} (${UNITS[includeUnit]})` : `${paramNameJa} (Torr)`;
-          }
-        } else if (hasKeyword(['flow', '유량', 'rate'])) {
-          paramName = 'Flow Rate';
-          paramNameKo = '유량';
-          paramNameZh = '流量';
-          paramNameJa = '流量';
-          if (!includeUnit && !value) {
-            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (sccm)`;
-            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (sccm)`;
-            textZh = includeUnit ? `${paramNameZh} (${UNITS[includeUnit]})` : `${paramNameZh} (sccm)`;
-            textJa = includeUnit ? `${paramNameJa} (${UNITS[includeUnit]})` : `${paramNameJa} (sccm)`;
-          }
-        } else if (hasKeyword(['power', '전력', '파워'])) {
-          paramName = 'Power';
-          paramNameKo = '전력';
-          paramNameZh = '功率';
-          paramNameJa = '電力';
-          if (!includeUnit && !value) {
-            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (W)`;
-            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (W)`;
-            textZh = includeUnit ? `${paramNameZh} (${UNITS[includeUnit]})` : `${paramNameZh} (W)`;
-            textJa = includeUnit ? `${paramNameJa} (${UNITS[includeUnit]})` : `${paramNameJa} (W)`;
-          }
-        } else if (hasKeyword(['voltage', '전압'])) {
-          paramName = 'Voltage';
-          paramNameKo = '전압';
-          paramNameZh = '电压';
-          paramNameJa = '電圧';
-          if (!includeUnit && !value) {
-            text = includeUnit ? `${paramName} (${UNITS[includeUnit]})` : `${paramName} (V)`;
-            textKo = includeUnit ? `${paramNameKo} (${UNITS[includeUnit]})` : `${paramNameKo} (V)`;
-            textZh = includeUnit ? `${paramNameZh} (${UNITS[includeUnit]})` : `${paramNameZh} (V)`;
-            textJa = includeUnit ? `${paramNameJa} (${UNITS[includeUnit]})` : `${paramNameJa} (V)`;
-          }
-        }
-
-        if (!text) {
-          text = `${paramName}`;
-          textKo = `${paramNameKo}`;
-          textZh = `${paramNameZh}`;
-          textJa = `${paramNameJa}`;
-        }
-
-        explanation = `Parameter label with standard unit notation`;
-        explanationKo = `표준 단위 표기법을 적용한 파라미터 라벨`;
-        explanationZh = `采用标准单位标记的参数标签`;
-        explanationJa = `標準単位表記を適用したパラメータラベル`;
-        appliedRules.push('Principle: Accuracy');
-      }
-      break;
-
-    case 'alert':
-      // Check for TC/Profile alarm range configuration - manual/documentation context
-      if (hasKeyword(['tc', 'profile']) && hasKeyword(['alarm', '알람', '알림']) && hasKeyword(['range', '범위', 'setting', '설정'])) {
-        // Manual/documentation style - detailed explanation for Profile TC alarm range
-        // Auto-detect this special case regardless of usageType
-        text = 'Set alarm range values by Profile TC. Alarm triggers when values exceed the configured range during DEV Check Time.';
-        textKo = '각 프로파일 TC의 알람 상한값/하한값을 설정합니다. 검사 시간 동안 측정값이 설정 범위를 초과하면 알람을 발생시켜 작업자에게 즉시 알립니다.';
-        textZh = '按Profile TC设置警报范围值。在DEV检查时间期间超出配置范围时触发警报。';
-        textJa = 'Profile TC別にアラーム範囲値を設定します。DEVチェック時間中に設定範囲を超えると該当アラームが発生します。';
-        explanation = 'Manual-style description for Profile TC alarm range configuration with operational context';
-        explanationKo = 'Profile TC 알람 범위 설정에 대한 매뉴얼 스타일 설명과 운영 상황 포함';
-        explanationZh = 'Profile TC警报范围配置的手册式说明，包含操作上下文';
-        explanationJa = 'Profile TCアラーム範囲設定に対するマニュアルスタイルの説明と運用コンテキストを含む';
-        appliedRules.push('Principle: Accuracy', 'Usage Type: Manual/Documentation', 'Profile TC Alarm Range');
-        break;
-      }
-
-      // Determine alert prefix based on safety level
-      if (safetyLevel === 'critical') {
-        text += 'IMMEDIATE ACTION REQUIRED: ';
-        textKo += '즉시 조치 필요: ';
-        textZh += '需要立即行动: ';
-        textJa += '即時対応が必要: ';
-        appliedRules.push('FR-004: Safety emphasis', 'Principle: Safety');
-      } else if (safetyLevel === 'danger') {
-        text += 'DANGER: ';
-        textKo += '위험: ';
-        textZh += '危险: ';
-        textJa += '危険: ';
-        appliedRules.push('Principle: Safety');
-      } else if (safetyLevel === 'warning') {
-        text += 'WARNING: ';
-        textKo += '경고: ';
-        textZh += '警告: ';
-        textJa += '警告: ';
-        appliedRules.push('Principle: Safety');
-      } else if (safetyLevel === 'blocked') {
-        text += 'BLOCKED: ';
-        textKo += '차단됨: ';
-        textZh += '已阻止: ';
-        textJa += 'ブロック済: ';
-        appliedRules.push('Principle: Safety');
-      }
-
-      // Generate alert message based on context with actionable guidance
-      if (hasKeyword(['temperature', '온도']) && hasKeyword(['high', 'exceed', '높', '초과', 'over'])) {
-        const alertText = value && includeUnit ?
-          `Stop process - Temperature at ${value}${UNITS[includeUnit]} (Limit exceeded)` :
-          'Stop process - Chamber temperature exceeds safe limit';
-        const alertTextKo = value && includeUnit ?
-          `공정 정지 - 온도 ${value}${UNITS[includeUnit]} (한계 초과)` :
-          '공정 정지 - 챔버 온도가 안전 한계 초과';
-        const alertTextZh = value && includeUnit ?
-          `停止工艺 - 温度 ${value}${UNITS[includeUnit]} (超出限制)` :
-          '停止工艺 - 腔室温度超出安全限制';
-        const alertTextJa = value && includeUnit ?
-          `プロセス停止 - 温度 ${value}${UNITS[includeUnit]} (制限超過)` :
-          'プロセス停止 - チャンバー温度が安全限界を超過';
-        text += alertText;
-        textKo += alertTextKo;
-        textZh += alertTextZh;
-        textJa += alertTextJa;
-        explanation = 'Safety alert with specific action, current value, and clear guidance for operator';
-        explanationKo = '운영자가 취해야 할 구체적 조치, 현재 값, 명확한 지침을 포함한 안전 경고';
-        explanationZh = '包含操作员应采取的具体行动、当前值和明确指导的安全警报';
-        explanationJa = 'オペレーターが取るべき具体的な行動、現在の値、明確な指示を含む安全警告';
-      } else if (hasKeyword(['pressure', '압력']) && hasKeyword(['high', 'exceed', '높', '초과', 'over'])) {
-        const alertText = value && includeUnit ?
-          `Vent chamber - Pressure at ${value}${UNITS[includeUnit]} (Limit exceeded)` :
-          'Vent chamber immediately - Pressure exceeds safe limit';
-        const alertTextKo = value && includeUnit ?
-          `챔버 배기 - 압력 ${value}${UNITS[includeUnit]} (한계 초과)` :
-          '챔버 즉시 배기 - 압력이 안전 한계 초과';
-        const alertTextZh = value && includeUnit ?
-          `排气腔室 - 压力 ${value}${UNITS[includeUnit]} (超出限制)` :
-          '立即排气腔室 - 压力超出安全限制';
-        const alertTextJa = value && includeUnit ?
-          `チャンバーをベント - 圧力 ${value}${UNITS[includeUnit]} (制限超過)` :
-          'チャンバーを即座にベント - 圧力が安全限界を超過';
-        text += alertText;
-        textKo += alertTextKo;
-        textZh += alertTextZh;
-        textJa += alertTextJa;
-        explanation = 'Safety alert with specific action, current value, and clear guidance for operator';
-        explanationKo = '운영자가 취해야 할 구체적 조치, 현재 값, 명확한 지침을 포함한 안전 경고';
-        explanationZh = '包含操作员应采取的具体行动、当前值和明确指导的安全警报';
-        explanationJa = 'オペレーターが取るべき具体的な行動、現在の値、明確な指示を含む安全警告';
-      } else if (hasKeyword(['error', '오류', 'fault', '장애'])) {
-        text += 'System error detected - Check diagnostic panel';
-        textKo += '시스템 오류 감지 - 진단 패널 확인';
-        textZh += '检测到系统错误 - 检查诊断面板';
-        textJa += 'システムエラーを検出 - 診断パネルを確認';
-        explanation = 'Error alert with next action for operator';
-        explanationKo = '운영자의 다음 조치를 포함한 오류 알림';
-        explanationZh = '包含操作员下一步操作的错误警报';
-        explanationJa = 'オペレーターの次の行動を含むエラー警告';
-      } else if (hasKeyword(['door', '도어', 'open', '열림'])) {
-        text += 'Close chamber door - Interlock active, process halted';
-        textKo += '챔버 도어 닫기 - 인터락 작동 중, 공정 중단됨';
-        textZh += '关闭腔室门 - 联锁激活，工艺已停止';
-        textJa += 'チャンバードアを閉める - インターロック作動中、プロセス停止';
-        explanation = 'Safety interlock alert with action and consequence';
-        explanationKo = '조치와 결과를 포함한 안전 인터락 경고';
-        explanationZh = '包含操作和后果的安全联锁警报';
-        explanationJa = '行動と結果を含む安全インターロック警告';
-      } else {
-        // Generic alert based on context
-        text += 'Check system status - Operator attention required';
-        textKo += '시스템 상태 확인 - 운영자 확인 필요';
-        textZh += '检查系统状态 - 需要操作员注意';
-        textJa += 'システム状態を確認 - オペレーターの注意が必要';
-        explanation = 'Generic alert message with action guidance';
-        explanationKo = '조치 지침이 포함된 일반 경고 메시지';
-        explanationZh = '包含行动指导的通用警报消息';
-        explanationJa = '行動ガイダンスを含む汎用警告メッセージ';
-      }
-      appliedRules.push('Principle: Immediate Comprehensibility', 'UX Writing: Action-oriented language');
-      break;
-
-    case 'status':
-      if (hasKeyword(['running', '실행', 'active', '작동'])) {
-        text = '🟢 Running';
-        textKo = '🟢 실행 중';
-        textZh = '🟢 运行中';
-        textJa = '🟢 実行中';
-        explanation = 'Active process status';
-        explanationKo = '활성 프로세스 상태';
-        explanationZh = '活动进程状态';
-        explanationJa = 'アクティブプロセス状態';
-      } else if (hasKeyword(['stopped', '정지', 'idle', '대기'])) {
-        text = '⚪ Stopped';
-        textKo = '⚪ 정지';
-        textZh = '⚪ 已停止';
-        textJa = '⚪ 停止';
-        explanation = 'Stopped status';
-        explanationKo = '정지 상태';
-        explanationZh = '停止状态';
-        explanationJa = '停止状態';
-      } else if (hasKeyword(['error', '오류', 'fault', '장애'])) {
-        text = '🔴 Error';
-        textKo = '🔴 오류';
-        textZh = '🔴 错误';
-        textJa = '🔴 エラー';
-        explanation = 'Error status';
-        explanationKo = '오류 상태';
-        explanationZh = '错误状态';
-        explanationJa = 'エラー状態';
-      } else if (hasKeyword(['warning', '경고', 'caution', '주의'])) {
-        text = '🟡 Warning';
-        textKo = '🟡 경고';
-        textZh = '🟡 警告';
-        textJa = '🟡 警告';
-        explanation = 'Warning status';
-        explanationKo = '경고 상태';
-        explanationZh = '警告状态';
-        explanationJa = '警告状態';
-      } else if (hasKeyword(['ready', '준비', 'standby'])) {
-        text = '🟢 Ready';
-        textKo = '🟢 준비';
-        textZh = '🟢 就绪';
-        textJa = '🟢 準備完了';
-        explanation = 'Ready status';
-        explanationKo = '준비 상태';
-        explanationZh = '就绪状态';
-        explanationJa = '準備完了状態';
-      } else if (hasKeyword(['processing', '처리', 'in progress', '진행'])) {
-        text = '🔵 Processing';
-        textKo = '🔵 처리 중';
-        textZh = '🔵 处理中';
-        textJa = '🔵 処理中';
-        explanation = 'Processing status';
-        explanationKo = '처리 중 상태';
-        explanationZh = '处理中状态';
-        explanationJa = '処理中状態';
-      } else if (hasKeyword(['complete', '완료', 'finished', 'done'])) {
-        text = '✅ Complete';
-        textKo = '✅ 완료';
-        textZh = '✅ 完成';
-        textJa = '✅ 完了';
-        explanation = 'Complete status';
-        explanationKo = '완료 상태';
-        explanationZh = '完成状态';
-        explanationJa = '完了状態';
-      } else {
-        text = 'Status';
-        textKo = '상태';
-        textZh = '状态';
-        textJa = '状態';
-        explanation = 'Generic status indicator';
-        explanationKo = '일반 상태 표시';
-        explanationZh = '通用状态指示';
-        explanationJa = '汎用状態表示';
-      }
-      appliedRules.push('FR-008: Standard status indicators', 'Principle: Immediate Comprehensibility');
-      break;
-
-    case 'input':
-      if (hasKeyword(['temperature', '온도'])) {
-        text = includeUnit ? `Set Target Temperature (${UNITS[includeUnit]})` : 'Set Target Temperature (°C)';
-        textKo = includeUnit ? `목표 온도 설정 (${UNITS[includeUnit]})` : '목표 온도 설정 (°C)';
-        textZh = includeUnit ? `设置目标温度 (${UNITS[includeUnit]})` : '设置目标温度 (°C)';
-        textJa = includeUnit ? `目標温度を設定 (${UNITS[includeUnit]})` : '目標温度を設定 (°C)';
-        explanation = 'Input field label with action verb and unit for clarity';
-        explanationKo = '명확성을 위한 동작 동사와 단위가 포함된 입력 필드 라벨';
-        explanationZh = '为清晰起见包含动作动词和单位的输入字段标签';
-        explanationJa = '明確性のための動作動詞と単位を含む入力フィールドラベル';
-      } else if (hasKeyword(['pressure', '압력'])) {
-        text = includeUnit ? `Set Target Pressure (${UNITS[includeUnit]})` : 'Set Target Pressure (Torr)';
-        textKo = includeUnit ? `목표 압력 설정 (${UNITS[includeUnit]})` : '목표 압력 설정 (Torr)';
-        textZh = includeUnit ? `设置目标压力 (${UNITS[includeUnit]})` : '设置目标压力 (Torr)';
-        textJa = includeUnit ? `目標圧力を設定 (${UNITS[includeUnit]})` : '目標圧力を設定 (Torr)';
-        explanation = 'Input field label with action verb and unit for clarity';
-        explanationKo = '명확성을 위한 동작 동사와 단위가 포함된 입력 필드 라벨';
-        explanationZh = '为清晰起见包含动作动词和单位的输入字段标签';
-        explanationJa = '明確性のための動作動詞と単位を含む入力フィールドラベル';
-      } else if (hasKeyword(['flow', '유량'])) {
-        text = includeUnit ? `Set Gas Flow Rate (${UNITS[includeUnit]})` : 'Set Gas Flow Rate (sccm)';
-        textKo = includeUnit ? `가스 유량 설정 (${UNITS[includeUnit]})` : '가스 유량 설정 (sccm)';
-        textZh = includeUnit ? `设置气体流量 (${UNITS[includeUnit]})` : '设置气体流量 (sccm)';
-        textJa = includeUnit ? `ガス流量を設定 (${UNITS[includeUnit]})` : 'ガス流量を設定 (sccm)';
-        explanation = 'Input field label with action verb and unit for clarity';
-        explanationKo = '명확성을 위한 동작 동사와 단위가 포함된 입력 필드 라벨';
-        explanationZh = '为清晰起见包含动作动词和单位的输入字段标签';
-        explanationJa = '明確性のための動作動詞と単位を含む入力フィールドラベル';
-      } else {
-        text = 'Enter Value';
-        textKo = '값 입력';
-        textZh = '输入值';
-        textJa = '値を入力';
-        explanation = 'Generic input field label with action verb';
-        explanationKo = '동작 동사가 포함된 일반 입력 필드 라벨';
-        explanationZh = '包含动作动词的通用输入字段标签';
-        explanationJa = '動作動詞を含む汎用入力フィールドラベル';
-      }
-      appliedRules.push('Principle: Accuracy', 'FR-002: Unit specification', 'UX Writing: Action-oriented language');
-      break;
-
-    case 'action':
-      if (hasKeyword(['adjust', '조절', 'control', '제어'])) {
-        text = 'Adjust';
-        textKo = '조절';
-        textZh = '调整';
-        textJa = '調整';
-        explanation = 'Adjustment action';
-        explanationKo = '조절 동작';
-        explanationZh = '调整操作';
-        explanationJa = '調整操作';
-      } else if (hasKeyword(['monitor', '모니터', 'watch', '감시'])) {
-        text = 'Monitor';
-        textKo = '모니터';
-        textZh = '监控';
-        textJa = 'モニター';
-        explanation = 'Monitoring action';
-        explanationKo = '모니터링 동작';
-        explanationZh = '监控操作';
-        explanationJa = 'モニタリング操作';
-      } else if (hasKeyword(['check', '확인', 'verify', '검증'])) {
-        text = 'Check';
-        textKo = '확인';
-        textZh = '检查';
-        textJa = '確認';
-        explanation = 'Verification action';
-        explanationKo = '확인 동작';
-        explanationZh = '验证操作';
-        explanationJa = '確認操作';
-      } else {
-        text = 'Execute';
-        textKo = '실행';
-        textZh = '执行';
-        textJa = '実行';
-        explanation = 'Generic action';
-        explanationKo = '일반 동작';
-        explanationZh = '通用操作';
-        explanationJa = '汎用操作';
-      }
-      appliedRules.push('Principle: Immediate Comprehensibility');
-      break;
-  }
-
-  // Ensure we always have some text
-  if (!text.trim()) {
-    console.warn('[generateIPSText] WARNING: Text is empty, using fallback');
-    text = 'System';
-    textKo = '시스템';
-    textZh = '系统';
-    textJa = 'システム';
-    explanation = 'Default text generated - please provide more specific context';
-    explanationKo = '기본 텍스트 생성됨 - 더 구체적인 상황 설명이 필요합니다';
-    explanationZh = '生成默认文本 - 请提供更具体的上下文';
-    explanationJa = 'デフォルトテキスト生成 - より具体的なコンテキストを提供してください';
-  }
-
-  // Final safety check
-  const finalText = text.trim() || 'ERROR: No text generated';
-  const finalTextKo = textKo.trim() || 'ERROR: 텍스트 생성 실패';
-  const finalTextZh = textZh.trim() || 'ERROR: 文本生成失败';
-  const finalTextJa = textJa.trim() || 'ERROR: テキスト生成失敗';
-
-  console.log('[generateIPSText] Final result:', {
-    text: finalText,
-    textKo: finalTextKo,
-    textZh: finalTextZh,
-    textJa: finalTextJa,
-    explanation,
-    explanationKo,
-    explanationZh,
-    explanationJa,
-    appliedRules
-  });
-
-  return {
-    text: finalText,
-    textKo: finalTextKo,
-    textZh: finalTextZh,
-    textJa: finalTextJa,
-    explanation: explanation || 'Generated following IPS guidelines',
-    explanationKo: explanationKo || 'IPS 가이드라인에 따라 생성됨',
-    explanationZh: explanationZh || '按照IPS指南生成',
-    explanationJa: explanationJa || 'IPSガイドラインに従って生成',
-    appliedRules: appliedRules.length > 0 ? appliedRules : ['Principle: Immediate Comprehensibility'],
-  };
 }
 
 /**
