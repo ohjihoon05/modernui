@@ -21,12 +21,10 @@ export function AITextGeneration() {
 
     // Simulate a slight delay for better UX
     setTimeout(() => {
+      // Auto-infer componentType, safetyLevel, and units from context
       const generatedResult = generateIPSText({
-        componentType: 'button',
         context: input,
-        safetyLevel: undefined,
-        includeUnit: undefined,
-        value: undefined,
+        // componentType, safetyLevel, includeUnit, value are auto-inferred
       });
 
       setResult(generatedResult);

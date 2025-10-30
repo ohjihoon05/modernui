@@ -101,11 +101,228 @@ export interface ValidationIssue {
 
 // Text generation request
 export interface TextGenerationRequest {
-  componentType: ComponentType;
+  componentType?: ComponentType;
   context: string;
   safetyLevel?: SafetyLevel;
   includeUnit?: keyof typeof UNITS;
   value?: number | string;
+}
+
+/**
+ * Infer component type from context string
+ */
+export function inferComponentType(context: string): ComponentType {
+  const lowerContext = context.toLowerCase();
+
+  // Alert/Warning keywords (highest priority for safety)
+  if (
+    lowerContext.includes('alert') ||
+    lowerContext.includes('alarm') ||
+    lowerContext.includes('알림') ||
+    lowerContext.includes('경고') ||
+    lowerContext.includes('warning') ||
+    lowerContext.includes('위험') ||
+    lowerContext.includes('danger') ||
+    lowerContext.includes('error') ||
+    lowerContext.includes('오류') ||
+    lowerContext.includes('fault') ||
+    lowerContext.includes('장애') ||
+    lowerContext.includes('초과') ||
+    lowerContext.includes('exceed') ||
+    lowerContext.includes('과다') ||
+    lowerContext.includes('high') ||
+    lowerContext.includes('low') ||
+    lowerContext.includes('leak') ||
+    lowerContext.includes('누출')
+  ) {
+    return 'alert';
+  }
+
+  // Status keywords
+  if (
+    lowerContext.includes('status') ||
+    lowerContext.includes('상태') ||
+    lowerContext.includes('display') ||
+    lowerContext.includes('표시') ||
+    lowerContext.includes('indicator') ||
+    lowerContext.includes('running') ||
+    lowerContext.includes('실행') ||
+    lowerContext.includes('stopped') ||
+    lowerContext.includes('정지') ||
+    lowerContext.includes('complete') ||
+    lowerContext.includes('완료') ||
+    lowerContext.includes('ready') ||
+    lowerContext.includes('준비')
+  ) {
+    return 'status';
+  }
+
+  // Input field keywords
+  if (
+    lowerContext.includes('input') ||
+    lowerContext.includes('입력') ||
+    lowerContext.includes('field') ||
+    lowerContext.includes('필드') ||
+    lowerContext.includes('enter') ||
+    lowerContext.includes('입력하') ||
+    lowerContext.includes('설정')
+  ) {
+    return 'input';
+  }
+
+  // Parameter/Measurement keywords with units
+  if (
+    lowerContext.includes('temperature') ||
+    lowerContext.includes('온도') ||
+    lowerContext.includes('pressure') ||
+    lowerContext.includes('압력') ||
+    lowerContext.includes('flow') ||
+    lowerContext.includes('유량') ||
+    lowerContext.includes('power') ||
+    lowerContext.includes('전력') ||
+    lowerContext.includes('voltage') ||
+    lowerContext.includes('전압') ||
+    lowerContext.includes('current') ||
+    lowerContext.includes('전류')
+  ) {
+    // If it mentions display, reading, or monitor, it's a measurement
+    if (
+      lowerContext.includes('display') ||
+      lowerContext.includes('reading') ||
+      lowerContext.includes('monitor') ||
+      lowerContext.includes('표시') ||
+      lowerContext.includes('측정') ||
+      lowerContext.includes('값')
+    ) {
+      return 'measurement';
+    }
+    // Otherwise, it's a parameter (setting)
+    return 'parameter';
+  }
+
+  // Button keywords
+  if (
+    lowerContext.includes('button') ||
+    lowerContext.includes('버튼') ||
+    lowerContext.includes('start') ||
+    lowerContext.includes('시작') ||
+    lowerContext.includes('stop') ||
+    lowerContext.includes('정지') ||
+    lowerContext.includes('cancel') ||
+    lowerContext.includes('취소') ||
+    lowerContext.includes('confirm') ||
+    lowerContext.includes('확인') ||
+    lowerContext.includes('reset') ||
+    lowerContext.includes('초기화') ||
+    lowerContext.includes('emergency') ||
+    lowerContext.includes('긴급') ||
+    lowerContext.includes('비상')
+  ) {
+    return 'button';
+  }
+
+  // Action keywords
+  if (
+    lowerContext.includes('action') ||
+    lowerContext.includes('동작') ||
+    lowerContext.includes('execute') ||
+    lowerContext.includes('실행') ||
+    lowerContext.includes('control') ||
+    lowerContext.includes('제어') ||
+    lowerContext.includes('adjust') ||
+    lowerContext.includes('조절')
+  ) {
+    return 'action';
+  }
+
+  // Default to button for general cases
+  return 'button';
+}
+
+/**
+ * Infer safety level from context string
+ */
+export function inferSafetyLevel(context: string): SafetyLevel | undefined {
+  const lowerContext = context.toLowerCase();
+
+  // Critical emergency
+  if (
+    lowerContext.includes('critical') ||
+    lowerContext.includes('emergency') ||
+    lowerContext.includes('긴급') ||
+    lowerContext.includes('비상') ||
+    lowerContext.includes('즉시')
+  ) {
+    return 'critical';
+  }
+
+  // Danger
+  if (
+    lowerContext.includes('danger') ||
+    lowerContext.includes('위험') ||
+    lowerContext.includes('high') && (lowerContext.includes('pressure') || lowerContext.includes('temperature')) ||
+    lowerContext.includes('과다') ||
+    lowerContext.includes('초과')
+  ) {
+    return 'danger';
+  }
+
+  // Warning
+  if (
+    lowerContext.includes('warning') ||
+    lowerContext.includes('caution') ||
+    lowerContext.includes('경고') ||
+    lowerContext.includes('주의')
+  ) {
+    return 'warning';
+  }
+
+  // Blocked
+  if (
+    lowerContext.includes('blocked') ||
+    lowerContext.includes('block') ||
+    lowerContext.includes('차단') ||
+    lowerContext.includes('interlock') ||
+    lowerContext.includes('인터락')
+  ) {
+    return 'blocked';
+  }
+
+  return undefined;
+}
+
+/**
+ * Infer unit type from context string
+ */
+export function inferUnitType(context: string): keyof typeof UNITS | undefined {
+  const lowerContext = context.toLowerCase();
+
+  if (lowerContext.includes('temperature') || lowerContext.includes('온도') || lowerContext.includes('temp')) {
+    return 'temperature';
+  }
+  if (lowerContext.includes('pressure') || lowerContext.includes('압력')) {
+    return 'pressure';
+  }
+  if (lowerContext.includes('flow') || lowerContext.includes('유량')) {
+    return 'flow';
+  }
+  if (lowerContext.includes('power') || lowerContext.includes('전력') || lowerContext.includes('파워')) {
+    return 'power';
+  }
+  if (lowerContext.includes('voltage') || lowerContext.includes('전압')) {
+    return 'voltage';
+  }
+  if (lowerContext.includes('current') || lowerContext.includes('전류')) {
+    return 'current';
+  }
+  if (lowerContext.includes('time') || lowerContext.includes('시간')) {
+    return 'time';
+  }
+  if (lowerContext.includes('rpm') || lowerContext.includes('회전')) {
+    return 'rpm';
+  }
+
+  return undefined;
 }
 
 // Text generation result
@@ -125,9 +342,18 @@ export interface TextGenerationResult {
  * Generate UX text following IPS guidelines
  */
 export function generateIPSText(request: TextGenerationRequest): TextGenerationResult {
-  const { componentType, context, safetyLevel, includeUnit, value } = request;
+  // Auto-infer missing parameters from context
+  const componentType = request.componentType || inferComponentType(request.context);
+  const safetyLevel = request.safetyLevel || inferSafetyLevel(request.context);
+  const includeUnit = request.includeUnit || inferUnitType(request.context);
+  const { context, value } = request;
 
   console.log('[generateIPSText] Starting generation with:', { componentType, context, safetyLevel, includeUnit, value });
+  console.log('[generateIPSText] Auto-inferred:', {
+    componentType: request.componentType ? 'provided' : 'inferred',
+    safetyLevel: request.safetyLevel ? 'provided' : (safetyLevel ? 'inferred' : 'none'),
+    includeUnit: request.includeUnit ? 'provided' : (includeUnit ? 'inferred' : 'none'),
+  });
 
   let text = '';
   let textKo = '';
@@ -320,10 +546,10 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
     case 'alert':
       // Determine alert prefix based on safety level
       if (safetyLevel === 'critical') {
-        text += 'IMMEDIATE ACTION: ';
-        textKo += '즉시 대응: ';
-        textZh += '立即处理: ';
-        textJa += '即時対応: ';
+        text += 'IMMEDIATE ACTION REQUIRED: ';
+        textKo += '즉시 조치 필요: ';
+        textZh += '需要立即行动: ';
+        textJa += '即時対応が必要: ';
         appliedRules.push('FR-004: Safety emphasis', 'Principle: Safety');
       } else if (safetyLevel === 'danger') {
         text += 'DANGER: ';
@@ -339,85 +565,85 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
         appliedRules.push('Principle: Safety');
       } else if (safetyLevel === 'blocked') {
         text += 'BLOCKED: ';
-        textKo += '차단: ';
+        textKo += '차단됨: ';
         textZh += '已阻止: ';
         textJa += 'ブロック済: ';
         appliedRules.push('Principle: Safety');
       }
 
-      // Generate alert message based on context
+      // Generate alert message based on context with actionable guidance
       if (hasKeyword(['temperature', '온도']) && hasKeyword(['high', 'exceed', '높', '초과', 'over'])) {
         const alertText = value && includeUnit ?
-          `Temperature exceeds limit (${value}${UNITS[includeUnit]})` :
-          'Chamber temperature too high';
+          `Stop process - Temperature at ${value}${UNITS[includeUnit]} (Limit exceeded)` :
+          'Stop process - Chamber temperature exceeds safe limit';
         const alertTextKo = value && includeUnit ?
-          `온도 한계 초과 (${value}${UNITS[includeUnit]})` :
-          '챔버 온도 과다';
+          `공정 정지 - 온도 ${value}${UNITS[includeUnit]} (한계 초과)` :
+          '공정 정지 - 챔버 온도가 안전 한계 초과';
         const alertTextZh = value && includeUnit ?
-          `温度超出限制 (${value}${UNITS[includeUnit]})` :
-          '腔室温度过高';
+          `停止工艺 - 温度 ${value}${UNITS[includeUnit]} (超出限制)` :
+          '停止工艺 - 腔室温度超出安全限制';
         const alertTextJa = value && includeUnit ?
-          `温度が制限を超過 (${value}${UNITS[includeUnit]})` :
-          'チャンバー温度が高すぎます';
+          `プロセス停止 - 温度 ${value}${UNITS[includeUnit]} (制限超過)` :
+          'プロセス停止 - チャンバー温度が安全限界を超過';
         text += alertText;
         textKo += alertTextKo;
         textZh += alertTextZh;
         textJa += alertTextJa;
-        explanation = 'Safety alert with specific issue and value';
-        explanationKo = '구체적인 문제와 값을 포함한 안전 경고';
-        explanationZh = '包含具体问题和数值的安全警报';
-        explanationJa = '具体的な問題と値を含む安全警告';
+        explanation = 'Safety alert with specific action, current value, and clear guidance for operator';
+        explanationKo = '운영자가 취해야 할 구체적 조치, 현재 값, 명확한 지침을 포함한 안전 경고';
+        explanationZh = '包含操作员应采取的具体行动、当前值和明确指导的安全警报';
+        explanationJa = 'オペレーターが取るべき具体的な行動、現在の値、明確な指示を含む安全警告';
       } else if (hasKeyword(['pressure', '압력']) && hasKeyword(['high', 'exceed', '높', '초과', 'over'])) {
         const alertText = value && includeUnit ?
-          `Pressure exceeds limit (${value}${UNITS[includeUnit]})` :
-          'Chamber pressure too high';
+          `Vent chamber - Pressure at ${value}${UNITS[includeUnit]} (Limit exceeded)` :
+          'Vent chamber immediately - Pressure exceeds safe limit';
         const alertTextKo = value && includeUnit ?
-          `압력 한계 초과 (${value}${UNITS[includeUnit]})` :
-          '챔버 압력 과다';
+          `챔버 배기 - 압력 ${value}${UNITS[includeUnit]} (한계 초과)` :
+          '챔버 즉시 배기 - 압력이 안전 한계 초과';
         const alertTextZh = value && includeUnit ?
-          `压力超出限制 (${value}${UNITS[includeUnit]})` :
-          '腔室压力过高';
+          `排气腔室 - 压力 ${value}${UNITS[includeUnit]} (超出限制)` :
+          '立即排气腔室 - 压力超出安全限制';
         const alertTextJa = value && includeUnit ?
-          `圧力が制限を超過 (${value}${UNITS[includeUnit]})` :
-          'チャンバー圧力が高すぎます';
+          `チャンバーをベント - 圧力 ${value}${UNITS[includeUnit]} (制限超過)` :
+          'チャンバーを即座にベント - 圧力が安全限界を超過';
         text += alertText;
         textKo += alertTextKo;
         textZh += alertTextZh;
         textJa += alertTextJa;
-        explanation = 'Safety alert with specific issue and value';
-        explanationKo = '구체적인 문제와 값을 포함한 안전 경고';
-        explanationZh = '包含具体问题和数值的安全警报';
-        explanationJa = '具体的な問題と値を含む安全警告';
+        explanation = 'Safety alert with specific action, current value, and clear guidance for operator';
+        explanationKo = '운영자가 취해야 할 구체적 조치, 현재 값, 명확한 지침을 포함한 안전 경고';
+        explanationZh = '包含操作员应采取的具体行动、当前值和明确指导的安全警报';
+        explanationJa = 'オペレーターが取るべき具体的な行動、現在の値、明確な指示を含む安全警告';
       } else if (hasKeyword(['error', '오류', 'fault', '장애'])) {
-        text += 'System error detected';
-        textKo += '시스템 오류 감지';
-        textZh += '检测到系统错误';
-        textJa += 'システムエラーを検出';
-        explanation = 'Error alert message';
-        explanationKo = '오류 알림 메시지';
-        explanationZh = '错误警报消息';
-        explanationJa = 'エラー警告メッセージ';
+        text += 'System error detected - Check diagnostic panel';
+        textKo += '시스템 오류 감지 - 진단 패널 확인';
+        textZh += '检测到系统错误 - 检查诊断面板';
+        textJa += 'システムエラーを検出 - 診断パネルを確認';
+        explanation = 'Error alert with next action for operator';
+        explanationKo = '운영자의 다음 조치를 포함한 오류 알림';
+        explanationZh = '包含操作员下一步操作的错误警报';
+        explanationJa = 'オペレーターの次の行動を含むエラー警告';
       } else if (hasKeyword(['door', '도어', 'open', '열림'])) {
-        text += 'Door open - Interlock active';
-        textKo += '도어 열림 - 인터락 활성';
-        textZh += '门已打开 - 联锁激活';
-        textJa += 'ドア開放 - インターロック作動中';
-        explanation = 'Safety interlock alert';
-        explanationKo = '안전 인터락 경고';
-        explanationZh = '安全联锁警报';
-        explanationJa = '安全インターロック警告';
+        text += 'Close chamber door - Interlock active, process halted';
+        textKo += '챔버 도어 닫기 - 인터락 작동 중, 공정 중단됨';
+        textZh += '关闭腔室门 - 联锁激活，工艺已停止';
+        textJa += 'チャンバードアを閉める - インターロック作動中、プロセス停止';
+        explanation = 'Safety interlock alert with action and consequence';
+        explanationKo = '조치와 결과를 포함한 안전 인터락 경고';
+        explanationZh = '包含操作和后果的安全联锁警报';
+        explanationJa = '行動と結果を含む安全インターロック警告';
       } else {
         // Generic alert based on context
-        text += 'Check system status';
-        textKo += '시스템 상태 확인';
-        textZh += '检查系统状态';
-        textJa += 'システム状態を確認';
-        explanation = 'Generic alert message based on context';
-        explanationKo = '상황에 따른 일반 경고 메시지';
-        explanationZh = '基于上下文的通用警报消息';
-        explanationJa = 'コンテキストに基づく汎用警告メッセージ';
+        text += 'Check system status - Operator attention required';
+        textKo += '시스템 상태 확인 - 운영자 확인 필요';
+        textZh += '检查系统状态 - 需要操作员注意';
+        textJa += 'システム状態を確認 - オペレーターの注意が必要';
+        explanation = 'Generic alert message with action guidance';
+        explanationKo = '조치 지침이 포함된 일반 경고 메시지';
+        explanationZh = '包含行动指导的通用警报消息';
+        explanationJa = '行動ガイダンスを含む汎用警告メッセージ';
       }
-      appliedRules.push('Principle: Immediate Comprehensibility');
+      appliedRules.push('Principle: Immediate Comprehensibility', 'UX Writing: Action-oriented language');
       break;
 
     case 'status':
@@ -499,43 +725,43 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
 
     case 'input':
       if (hasKeyword(['temperature', '온도'])) {
-        text = includeUnit ? `Temperature (${UNITS[includeUnit]})` : 'Temperature (°C)';
-        textKo = includeUnit ? `온도 (${UNITS[includeUnit]})` : '온도 (°C)';
-        textZh = includeUnit ? `温度 (${UNITS[includeUnit]})` : '温度 (°C)';
-        textJa = includeUnit ? `温度 (${UNITS[includeUnit]})` : '温度 (°C)';
-        explanation = 'Input field label with unit';
-        explanationKo = '단위가 포함된 입력 필드 라벨';
-        explanationZh = '带有单位的输入字段标签';
-        explanationJa = '単位付き入力フィールドラベル';
+        text = includeUnit ? `Set Target Temperature (${UNITS[includeUnit]})` : 'Set Target Temperature (°C)';
+        textKo = includeUnit ? `목표 온도 설정 (${UNITS[includeUnit]})` : '목표 온도 설정 (°C)';
+        textZh = includeUnit ? `设置目标温度 (${UNITS[includeUnit]})` : '设置目标温度 (°C)';
+        textJa = includeUnit ? `目標温度を設定 (${UNITS[includeUnit]})` : '目標温度を設定 (°C)';
+        explanation = 'Input field label with action verb and unit for clarity';
+        explanationKo = '명확성을 위한 동작 동사와 단위가 포함된 입력 필드 라벨';
+        explanationZh = '为清晰起见包含动作动词和单位的输入字段标签';
+        explanationJa = '明確性のための動作動詞と単位を含む入力フィールドラベル';
       } else if (hasKeyword(['pressure', '압력'])) {
-        text = includeUnit ? `Pressure (${UNITS[includeUnit]})` : 'Pressure (Torr)';
-        textKo = includeUnit ? `압력 (${UNITS[includeUnit]})` : '압력 (Torr)';
-        textZh = includeUnit ? `压力 (${UNITS[includeUnit]})` : '压力 (Torr)';
-        textJa = includeUnit ? `圧力 (${UNITS[includeUnit]})` : '圧力 (Torr)';
-        explanation = 'Input field label with unit';
-        explanationKo = '단위가 포함된 입력 필드 라벨';
-        explanationZh = '带有单位的输入字段标签';
-        explanationJa = '単位付き入力フィールドラベル';
+        text = includeUnit ? `Set Target Pressure (${UNITS[includeUnit]})` : 'Set Target Pressure (Torr)';
+        textKo = includeUnit ? `목표 압력 설정 (${UNITS[includeUnit]})` : '목표 압력 설정 (Torr)';
+        textZh = includeUnit ? `设置目标压力 (${UNITS[includeUnit]})` : '设置目标压力 (Torr)';
+        textJa = includeUnit ? `目標圧力を設定 (${UNITS[includeUnit]})` : '目標圧力を設定 (Torr)';
+        explanation = 'Input field label with action verb and unit for clarity';
+        explanationKo = '명확성을 위한 동작 동사와 단위가 포함된 입력 필드 라벨';
+        explanationZh = '为清晰起见包含动作动词和单位的输入字段标签';
+        explanationJa = '明確性のための動作動詞と単位を含む入力フィールドラベル';
       } else if (hasKeyword(['flow', '유량'])) {
-        text = includeUnit ? `Flow Rate (${UNITS[includeUnit]})` : 'Flow Rate (sccm)';
-        textKo = includeUnit ? `유량 (${UNITS[includeUnit]})` : '유량 (sccm)';
-        textZh = includeUnit ? `流量 (${UNITS[includeUnit]})` : '流量 (sccm)';
-        textJa = includeUnit ? `流量 (${UNITS[includeUnit]})` : '流量 (sccm)';
-        explanation = 'Input field label with unit';
-        explanationKo = '단위가 포함된 입력 필드 라벨';
-        explanationZh = '带有单位的输入字段标签';
-        explanationJa = '単位付き入力フィールドラベル';
+        text = includeUnit ? `Set Gas Flow Rate (${UNITS[includeUnit]})` : 'Set Gas Flow Rate (sccm)';
+        textKo = includeUnit ? `가스 유량 설정 (${UNITS[includeUnit]})` : '가스 유량 설정 (sccm)';
+        textZh = includeUnit ? `设置气体流量 (${UNITS[includeUnit]})` : '设置气体流量 (sccm)';
+        textJa = includeUnit ? `ガス流量を設定 (${UNITS[includeUnit]})` : 'ガス流量を設定 (sccm)';
+        explanation = 'Input field label with action verb and unit for clarity';
+        explanationKo = '명확성을 위한 동작 동사와 단위가 포함된 입력 필드 라벨';
+        explanationZh = '为清晰起见包含动作动词和单位的输入字段标签';
+        explanationJa = '明確性のための動作動詞と単位を含む入力フィールドラベル';
       } else {
-        text = 'Input Value';
-        textKo = '입력 값';
+        text = 'Enter Value';
+        textKo = '값 입력';
         textZh = '输入值';
-        textJa = '入力値';
-        explanation = 'Generic input field label';
-        explanationKo = '일반 입력 필드 라벨';
-        explanationZh = '通用输入字段标签';
-        explanationJa = '汎用入力フィールドラベル';
+        textJa = '値を入力';
+        explanation = 'Generic input field label with action verb';
+        explanationKo = '동작 동사가 포함된 일반 입력 필드 라벨';
+        explanationZh = '包含动作动词的通用输入字段标签';
+        explanationJa = '動作動詞を含む汎用入力フィールドラベル';
       }
-      appliedRules.push('Principle: Accuracy', 'FR-002: Unit specification');
+      appliedRules.push('Principle: Accuracy', 'FR-002: Unit specification', 'UX Writing: Action-oriented language');
       break;
 
     case 'action':
@@ -756,7 +982,7 @@ function validateSafety(text: string): ValidationResult {
     '위험', '경고', '주의', '비상', '긴급',
     'error', 'fault', 'failure', '오류', '장애', '고장',
     'pressure', 'temperature', 'voltage', 'current',
-    '압력', '온도', '전압', '전류', 'leak', '누출'
+    '압력', '온도', '전압', '전류', 'leak', '누출', 'exceed', '초과'
   ];
 
   const isSafetyRelated = safetyKeywords.some(keyword =>
@@ -784,21 +1010,47 @@ function validateSafety(text: string): ValidationResult {
       score -= 30;
     }
 
-    // Check for specific action instructions
-    const hasActionInstruction = /즉시|immediately|stop|정지|contact|연락/i.test(text);
-    if (!hasActionInstruction) {
+    // Check for specific action verbs (operator-oriented)
+    const actionVerbs = [
+      'stop', 'vent', 'check', 'close', 'contact', 'verify', 'adjust',
+      '정지', '배기', '확인', '닫기', '연락', '검증', '조절', '즉시'
+    ];
+    const hasActionVerb = actionVerbs.some(verb =>
+      text.toLowerCase().includes(verb)
+    );
+
+    if (!hasActionVerb) {
       issues.push({
-        type: 'warning',
-        message: 'Safety alert should include specific action instruction',
-        messageKo: '안전 경고에 구체적인 대응 방법 포함 필요',
-        messageZh: '安全警报应包含具体的操作指示',
-        messageJa: '安全警告には具体的な対応方法を含める必要があります',
-        suggestion: 'Add clear action (e.g., "즉시 정지", "즉시 연락")',
-        suggestionKo: '명확한 대응 방법 추가 (예: "즉시 정지", "즉시 연락")',
-        suggestionZh: '添加明确的操作（例如："立即停止"、"立即联系"）',
-        suggestionJa: '明確な対応を追加してください（例：「即座に停止」、「即座に連絡」）',
+        type: 'error',
+        message: 'Safety alert missing action verb - operator needs clear instruction',
+        messageKo: '안전 경고에 행동 동사 누락 - 운영자에게 명확한 지시 필요',
+        messageZh: '安全警报缺少动作动词 - 操作员需要明确的指示',
+        messageJa: '安全警告に行動動詞が欠落 - オペレーターに明確な指示が必要',
+        suggestion: 'Add action verb: Stop, Vent, Check, Close, Contact',
+        suggestionKo: '행동 동사 추가: 정지, 배기, 확인, 닫기, 연락',
+        suggestionZh: '添加动作动词：停止、排气、检查、关闭、联系',
+        suggestionJa: '行動動詞を追加：停止、ベント、確認、閉じる、連絡',
       });
-      score -= 15;
+      score -= 25;
+    }
+
+    // Check for specific values in alerts about limits
+    if (text.toLowerCase().includes('exceed') || text.includes('초과') || text.includes('limit')) {
+      const hasNumericValue = /\d+/.test(text);
+      if (!hasNumericValue) {
+        issues.push({
+          type: 'warning',
+          message: 'Limit exceeded alert should include specific numeric value',
+          messageKo: '한계 초과 경고에 구체적인 숫자 값 포함 필요',
+          messageZh: '超出限制警报应包含具体数值',
+          messageJa: '制限超過警告には具体的な数値を含める必要があります',
+          suggestion: 'Add current value and limit (e.g., "Temperature at 480°C (Limit: 450°C)")',
+          suggestionKo: '현재 값과 한계 추가 (예: "온도 480°C (한계: 450°C)")',
+          suggestionZh: '添加当前值和限制（例如："温度 480°C（限制：450°C）"）',
+          suggestionJa: '現在の値と制限を追加（例：「温度 480°C（制限：450°C）」）',
+        });
+        score -= 15;
+      }
     }
   }
 
@@ -995,30 +1247,30 @@ export const COMPONENT_TEMPLATES: ComponentTemplate[] = [
     descriptionJa: 'プロセスパラメータの入力フィールド',
     examples: [
       {
-        text: 'Temperature (°C)',
-        textKo: '온도 (°C)',
-        textZh: '温度 (°C)',
-        textJa: '温度 (°C)',
+        text: 'Set Target Temperature (°C)',
+        textKo: '목표 온도 설정 (°C)',
+        textZh: '设置目标温度 (°C)',
+        textJa: '目標温度を設定 (°C)',
         context: 'Chamber temperature setting',
         contextKo: '챔버 온도 설정',
         contextZh: '腔室温度设置',
         contextJa: 'チャンバー温度設定',
       },
       {
-        text: 'Pressure (Torr)',
-        textKo: '압력 (Torr)',
-        textZh: '压力 (Torr)',
-        textJa: '圧力 (Torr)',
+        text: 'Set Target Pressure (Torr)',
+        textKo: '목표 압력 설정 (Torr)',
+        textZh: '设置目标压力 (Torr)',
+        textJa: '目標圧力を設定 (Torr)',
         context: 'Vacuum pressure setting',
         contextKo: '진공 압력 설정',
         contextZh: '真空压力设置',
         contextJa: '真空圧力設定',
       },
       {
-        text: 'Gas Flow (sccm)',
-        textKo: '가스 유량 (sccm)',
-        textZh: '气体流量 (sccm)',
-        textJa: 'ガス流量 (sccm)',
+        text: 'Set Gas Flow Rate (sccm)',
+        textKo: '가스 유량 설정 (sccm)',
+        textZh: '设置气体流量 (sccm)',
+        textJa: 'ガス流量を設定 (sccm)',
         context: 'Gas flow rate',
         contextKo: '가스 유량',
         contextZh: '气体流速',
@@ -1026,24 +1278,28 @@ export const COMPONENT_TEMPLATES: ComponentTemplate[] = [
       },
     ],
     guidelines: [
+      'Start with action verb (Set, Enter, Adjust)',
       'Always include unit in label',
       'Use standard semiconductor industry units',
-      'Show valid range or limits',
+      'Show valid range or limits in placeholder',
     ],
     guidelinesKo: [
+      '동작 동사로 시작 (설정, 입력, 조절)',
       '라벨에 항상 단위 포함',
       '표준 반도체 산업 단위 사용',
-      '유효 범위 또는 한계 표시',
+      '플레이스홀더에 유효 범위 또는 한계 표시',
     ],
     guidelinesZh: [
+      '以动作动词开始（设置、输入、调整）',
       '标签中始终包含单位',
       '使用半导体行业标准单位',
-      '显示有效范围或限制',
+      '在占位符中显示有效范围或限制',
     ],
     guidelinesJa: [
+      '動作動詞で開始（設定、入力、調整）',
       'ラベルに常に単位を含める',
       '半導体業界標準の単位を使用',
-      '有効な範囲または制限を表示',
+      'プレースホルダーに有効な範囲または制限を表示',
     ],
   },
   {
@@ -1059,30 +1315,30 @@ export const COMPONENT_TEMPLATES: ComponentTemplate[] = [
     descriptionJa: '重要な安全警告とアラート',
     examples: [
       {
-        text: '🚨 IMMEDIATE ACTION: Chamber overpressure (15 Torr)',
-        textKo: '🚨 즉시 대응: 챔버 과압 (15 Torr)',
-        textZh: '🚨 立即处理: 腔室过压 (15 Torr)',
-        textJa: '🚨 即時対応: チャンバー過圧 (15 Torr)',
+        text: '🚨 IMMEDIATE ACTION REQUIRED: Vent chamber - Pressure at 15 Torr (Limit exceeded)',
+        textKo: '🚨 즉시 조치 필요: 챔버 배기 - 압력 15 Torr (한계 초과)',
+        textZh: '🚨 需要立即行动: 排气腔室 - 压力 15 Torr (超出限制)',
+        textJa: '🚨 即時対応が必要: チャンバーをベント - 圧力 15 Torr (制限超過)',
         context: 'Critical pressure alert',
         contextKo: '긴급 압력 경고',
         contextZh: '紧急压力警报',
         contextJa: '緊急圧力警告',
       },
       {
-        text: '⚠️ WARNING: Temperature exceeds limit (450°C)',
-        textKo: '⚠️ 경고: 온도 한계 초과 (450°C)',
-        textZh: '⚠️ 警告: 温度超出限制 (450°C)',
-        textJa: '⚠️ 警告: 温度が制限を超過 (450°C)',
+        text: '⚠️ WARNING: Stop process - Temperature at 450°C (Limit exceeded)',
+        textKo: '⚠️ 경고: 공정 정지 - 온도 450°C (한계 초과)',
+        textZh: '⚠️ 警告: 停止工艺 - 温度 450°C (超出限制)',
+        textJa: '⚠️ 警告: プロセス停止 - 温度 450°C (制限超過)',
         context: 'Temperature warning',
         contextKo: '온도 경고',
         contextZh: '温度警告',
         contextJa: '温度警告',
       },
       {
-        text: '🚫 BLOCKED: Interlock active - Door open',
-        textKo: '🚫 차단: 인터락 활성 - 도어 열림',
-        textZh: '🚫 已阻止: 联锁激活 - 门已打开',
-        textJa: '🚫 ブロック済: インターロック作動中 - ドア開放',
+        text: '🚫 BLOCKED: Close chamber door - Interlock active, process halted',
+        textKo: '🚫 차단됨: 챔버 도어 닫기 - 인터락 작동 중, 공정 중단됨',
+        textZh: '🚫 已阻止: 关闭腔室门 - 联锁激活，工艺已停止',
+        textJa: '🚫 ブロック済: チャンバードアを閉める - インターロック作動中、プロセス停止',
         context: 'Safety interlock',
         contextKo: '안전 인터락',
         contextZh: '安全联锁',
@@ -1091,27 +1347,27 @@ export const COMPONENT_TEMPLATES: ComponentTemplate[] = [
     ],
     guidelines: [
       'Always start with appropriate safety icon',
-      'Include specific value and unit',
-      'Provide clear action or cause',
-      'Use hierarchical urgency levels',
+      'Include specific action verb (Stop, Vent, Check, Close)',
+      'Show current value and exceeded limit',
+      'State immediate consequence if applicable',
     ],
     guidelinesKo: [
       '항상 적절한 안전 아이콘으로 시작',
-      '구체적인 값과 단위 포함',
-      '명확한 대응 방법 또는 원인 제시',
-      '계층적 긴급도 수준 사용',
+      '구체적인 행동 동사 포함 (정지, 배기, 확인, 닫기)',
+      '현재 값과 초과된 한계 표시',
+      '해당되는 경우 즉각적인 결과 명시',
     ],
     guidelinesZh: [
       '始终以适当的安全图标开始',
-      '包含具体数值和单位',
-      '提供明确的操作或原因',
-      '使用分层紧急级别',
+      '包含具体的动作动词（停止、排气、检查、关闭）',
+      '显示当前值和超出的限制',
+      '说明适用的即时后果',
     ],
     guidelinesJa: [
       '常に適切な安全アイコンで開始',
-      '具体的な値と単位を含める',
-      '明確な対応または原因を提供',
-      '階層的な緊急度レベルを使用',
+      '具体的な行動動詞を含める（停止、ベント、確認、閉じる）',
+      '現在の値と超過した制限を表示',
+      '該当する場合は即座の結果を明記',
     ],
   },
   {
