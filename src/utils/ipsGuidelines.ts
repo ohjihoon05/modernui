@@ -553,6 +553,23 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
       break;
 
     case 'alert':
+      // Check for TC/Profile alarm range configuration - manual/documentation context
+      if (hasKeyword(['tc', 'profile']) && hasKeyword(['alarm', '알람', '알림']) && hasKeyword(['range', '범위', 'setting', '설정'])) {
+        if (request.usageType === 'manual') {
+          // Manual/documentation style - detailed explanation
+          text = 'Set alarm range values by Profile TC. Alarm triggers when values exceed the configured range during DEV Check Time.';
+          textKo = 'Profile TC 별로 Alarm 범위값을 설정합니다. DEV Check Time 동안 Alarm 설정의 범위를 벗어나면 해당 Alarm이 발생합니다.';
+          textZh = '按Profile TC设置警报范围值。在DEV检查时间期间超出配置范围时触发警报。';
+          textJa = 'Profile TC別にアラーム範囲値を設定します。DEVチェック時間中に設定範囲を超えると該当アラームが発生します。';
+          explanation = 'Manual-style description for Profile TC alarm range configuration with operational context';
+          explanationKo = 'Profile TC 알람 범위 설정에 대한 매뉴얼 스타일 설명과 운영 상황 포함';
+          explanationZh = 'Profile TC警报范围配置的手册式说明，包含操作上下文';
+          explanationJa = 'Profile TCアラーム範囲設定に対するマニュアルスタイルの説明と運用コンテキストを含む';
+          appliedRules.push('Principle: Accuracy', 'Usage Type: Manual/Documentation', 'Profile TC Alarm Range');
+          break;
+        }
+      }
+
       // Determine alert prefix based on safety level
       if (safetyLevel === 'critical') {
         text += 'IMMEDIATE ACTION REQUIRED: ';
