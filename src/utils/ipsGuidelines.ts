@@ -19,6 +19,14 @@ export type ComponentType =
   | 'action'           // 동작
   | 'measurement';     // 측정값
 
+// Usage types for different contexts
+export type UsageType =
+  | 'button'           // SW Button - 버튼 텍스트 (짧고 명확)
+  | 'popup'            // Popup/Dialog - 팝업 메시지 (중간 길이)
+  | 'alert'            // Alert/Troubleshooting - 알람/트러블슈팅 (조치 포함)
+  | 'manual'           // Manual/Documentation - 매뉴얼/문서 (상세)
+  | 'parameter';       // Parameter/Setting - 파라미터/설정 (기술적)
+
 // Safety levels for alerts and warnings
 export type SafetyLevel =
   | 'critical'   // 🚨 Critical emergency
@@ -106,6 +114,7 @@ export interface TextGenerationRequest {
   safetyLevel?: SafetyLevel;
   includeUnit?: keyof typeof UNITS;
   value?: number | string;
+  usageType?: UsageType;  // Usage context for text generation
 }
 
 /**
