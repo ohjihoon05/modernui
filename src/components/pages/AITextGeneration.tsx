@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Copy } from 'lucide-react';
 import {
   generateIPSText,
   TextGenerationResult,
@@ -145,27 +145,67 @@ export function AITextGeneration() {
               <div className="p-6 sm:p-8 bg-card rounded-2xl shadow-lg border border-border space-y-6">
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">English</p>
-                  <p className="text-xl sm:text-2xl font-medium text-foreground">
-                    {result.text || 'No text generated'}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xl sm:text-2xl font-medium text-foreground flex-1">
+                      {result.text || 'No text generated'}
+                    </p>
+                    <Button
+                      onClick={() => navigator.clipboard.writeText(result.text)}
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-8 w-8"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">한국어</p>
-                  <p className="text-xl sm:text-2xl font-medium text-foreground">
-                    {result.textKo || '텍스트 미생성'}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xl sm:text-2xl font-medium text-foreground flex-1">
+                      {result.textKo || '텍스트 미생성'}
+                    </p>
+                    <Button
+                      onClick={() => navigator.clipboard.writeText(result.textKo)}
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-8 w-8"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">中文</p>
-                  <p className="text-xl sm:text-2xl font-medium text-foreground">
-                    {result.textZh || '未生成文本'}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xl sm:text-2xl font-medium text-foreground flex-1">
+                      {result.textZh || '未生成文本'}
+                    </p>
+                    <Button
+                      onClick={() => navigator.clipboard.writeText(result.textZh)}
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-8 w-8"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">日本語</p>
-                  <p className="text-xl sm:text-2xl font-medium text-foreground">
-                    {result.textJa || 'テキスト未生成'}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xl sm:text-2xl font-medium text-foreground flex-1">
+                      {result.textJa || 'テキスト未生成'}
+                    </p>
+                    <Button
+                      onClick={() => navigator.clipboard.writeText(result.textJa)}
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-8 w-8"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
