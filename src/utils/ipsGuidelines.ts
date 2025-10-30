@@ -558,7 +558,7 @@ export function generateIPSText(request: TextGenerationRequest): TextGenerationR
         if (request.usageType === 'manual') {
           // Manual/documentation style - detailed explanation
           text = 'Set alarm range values by Profile TC. Alarm triggers when values exceed the configured range during DEV Check Time.';
-          textKo = 'Profile TC 별로 Alarm 범위값을 설정합니다. DEV Check Time 동안 Alarm 설정의 범위를 벗어나면 해당 Alarm이 발생합니다.';
+          textKo = '각 프로파일 TC의 알람 상한값/하한값을 설정합니다. 검사 시간 동안 측정값이 설정 범위를 초과하면 알람을 발생시켜 작업자에게 즉시 알립니다.';
           textZh = '按Profile TC设置警报范围值。在DEV检查时间期间超出配置范围时触发警报。';
           textJa = 'Profile TC別にアラーム範囲値を設定します。DEVチェック時間中に設定範囲を超えると該当アラームが発生します。';
           explanation = 'Manual-style description for Profile TC alarm range configuration with operational context';
