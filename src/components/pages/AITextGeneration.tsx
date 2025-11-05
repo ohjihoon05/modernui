@@ -31,10 +31,9 @@ export function AITextGeneration() {
 
     setIsGenerating(true);
 
-    // Simulate a slight delay for better UX
-    setTimeout(() => {
+    try {
       // Auto-infer componentType, safetyLevel, and units from context
-      const generatedResult = generateIPSText({
+      const generatedResult = await generateIPSText({
         context: input,
         usageType: usageType || undefined,
         // componentType, safetyLevel, includeUnit, value are auto-inferred
@@ -45,9 +44,11 @@ export function AITextGeneration() {
       // Automatically validate generated text
       const validation = validateIPSText(generatedResult.text);
       setValidationResults(validation);
-
+    } catch (error) {
+      console.error('Failed to generate text:', error);
+    } finally {
       setIsGenerating(false);
-    }, 500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
