@@ -13,6 +13,8 @@ import {
   generateIPSText,
   TextGenerationResult,
   UsageType,
+  validateIPSText,
+  ValidationResult,
 } from '../../utils/ipsGuidelines';
 
 export function AITextGeneration() {
@@ -20,6 +22,7 @@ export function AITextGeneration() {
   const [usageType, setUsageType] = useState<UsageType | ''>('');
   const [result, setResult] = useState<TextGenerationResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
 
   const handleGenerate = async () => {
     if (!input.trim()) {
@@ -38,6 +41,11 @@ export function AITextGeneration() {
       });
 
       setResult(generatedResult);
+
+      // Automatically validate generated text
+      const validation = validateIPSText(generatedResult.text);
+      setValidationResults(validation);
+
       setIsGenerating(false);
     }, 500);
   };
@@ -177,6 +185,73 @@ export function AITextGeneration() {
                 </div>
               )}
 
+              {/* Validation Results */}
+              {validationResults.length > 0 && (
+                <div className="p-4 sm:p-6 bg-card rounded-2xl border border-border space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Validation Results</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {validationResults.map((validation) => (
+                      <div
+                        key={validation.category}
+                        className={`p-4 rounded-xl border-2 ${
+                          validation.passed
+                            ? 'border-green-500/30 bg-green-500/5'
+                            : 'border-red-500/30 bg-red-500/5'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-medium capitalize">
+                              {validation.category}
+                            </span>
+                            {validation.passed ? (
+                              <span className="text-green-500">✓</span>
+                            ) : (
+                              <span className="text-red-500">✗</span>
+                            )}
+                          </div>
+                          <span
+                            className={`text-sm font-semibold ${
+                              validation.passed ? 'text-green-600' : 'text-red-600'
+                            }`}
+                          >
+                            {validation.score}/100
+                          </span>
+                        </div>
+
+                        {validation.issues.length > 0 && (
+                          <div className="space-y-2">
+                            {validation.issues.map((issue, idx) => (
+                              <div
+                                key={idx}
+                                className={`p-3 rounded-lg text-sm ${
+                                  issue.type === 'error'
+                                    ? 'bg-red-100/50 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                                    : issue.type === 'warning'
+                                    ? 'bg-yellow-100/50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                                    : 'bg-blue-100/50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                                }`}
+                              >
+                                <p className="font-medium mb-1">{issue.messageKo}</p>
+                                {issue.suggestionKo && (
+                                  <p className="text-xs opacity-80">💡 {issue.suggestionKo}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {validation.issues.length === 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            No issues found
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <Button
@@ -184,6 +259,7 @@ export function AITextGeneration() {
                     setResult(null);
                     setInput('');
                     setUsageType('');
+                    setValidationResults([]);
                   }}
                   variant="outline"
                   className="flex-1 rounded-xl border-border text-foreground hover:bg-muted"
